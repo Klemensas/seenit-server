@@ -4,7 +4,7 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as BearerStrategy } from 'passport-http-bearer';
 import * as bcrypt from 'bcrypt';
 
-import { getUserById, getUser } from '../queries/user';
+import { getUserById, getFullUser } from '../queries/user';
 import { User } from '../models/user';
 import { config } from '../config';
 import { AuthError } from '../errors/authError';
@@ -25,7 +25,7 @@ export class Auth {
     });
   }
   public static isAuthenticated() {
-      return passport.authenticate('bearer', {session: false, failWithError: true});
+      return passport.authenticate('bearer', {session: false, failWithError: false});
   }
 
   /**
@@ -36,8 +36,11 @@ export class Auth {
    * a user is logged in before asking them to approve the request.
    */
   static useLocalStrategy() {
-    passport.use(new LocalStrategy(async (email, password, done) => {
-        const user = await getUser({ email });
+    passport.use(new LocalStrategy({
+      usernameField: 'email',
+      passwordField: 'password',
+    }, async (email, password, done) => {
+        const user = await getFullUser({ email });
         if (!user) { return done('User not found', false); }
 
         const authorized = await this.comparePasswords(password, user.password);

@@ -1,6 +1,6 @@
-import * as crypto from 'crypto';
 import { BaseModel } from './baseModel';
 import * as bcrypt from 'bcrypt';
+import { QueryContext } from 'objection';
 
 export class User extends BaseModel {
   readonly id: number;
@@ -44,7 +44,26 @@ export class User extends BaseModel {
       throw new Error('Missing password');
     }
 
-    return bcrypt.genSalt(10)
-      .then((salt) => bcrypt.hash(password, salt));
+    return bcrypt.hash(password, this.salt);
+  }
+
+  generateSalt(rounds = 10) {
+    return bcrypt.genSalt(10);
+  }
+
+  async updatePassword(): Promise<void> {
+    if (this.password) {
+      if ((!this.password || !this.password.length)) {
+        throw new Error('Invalid password');
+      }
+    }
+
+    this.salt = await this.generateSalt();
+    this.password = await this.encryptPassword(this.password);
+  }
+
+  async $beforeInsert(queryContext: QueryContext) {
+    super.$beforeInsert(queryContext);
+    await this.updatePassword();
   }
 }

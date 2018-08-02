@@ -12,10 +12,14 @@ export function getUserById(id: number, connection: Transaction | Knex = knex) {
 }
 
 export function getUser(where: Partial<User>, connection: Transaction | Knex = knex) {
+  return getFullUser(where, connection)
+    .select('id', 'name', 'email', 'createdAt', 'updatedAt');
+}
+
+export function getFullUser(where: Partial<User>, connection: Transaction | Knex = knex) {
   return User
     .query(connection)
-    .findOne(where)
-    .select('id', 'name', 'email', 'createdAt', 'updatedAt');
+    .findOne(where);
 }
 
 export function createUser(user: Partial<User>, connection: Transaction | Knex = knex) {
