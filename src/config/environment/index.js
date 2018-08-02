@@ -10,7 +10,7 @@ module.exports = {
   secrets: {
     session: process.env.APP_SECRET || 'secret',
   },
-  sessionLength: process.env_SESSION_LENGTH || 18000,
+  sessionLength: process.env.SESSION_LENGTH || 18000,
   knex: {
     options: {
       client: 'postgresql',
@@ -20,4 +20,10 @@ module.exports = {
     },
     connection: process.env.DB_CONNECTION || 'postgres://screen:supasecretpassword@localhost:5434/screen',
   },
+  tvDb: {
+    apikey: process.env.TVDB_API_KEY,
+    username: process.env.TVDB_USERNAME,
+    userkey: process.env.TVDB_USERKEY,
+  },
+  tmDbApikey: process.env.TMDB_API_KEY,
 };
