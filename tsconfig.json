@@ -4,7 +4,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "target": "es6",
-    "outDir": "./build",
+    "outDir": "./dist",
     "lib": [
         "es6",
         "es2017",
@@ -12,10 +12,12 @@
     ],
     "sourceMap": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    // Required for apollo
+    "skipLibCheck": true,
   },
   "exclude": [
-    "build",
+    "dist",
     "node_modules",
     "knexfile*",
     "migrations"
