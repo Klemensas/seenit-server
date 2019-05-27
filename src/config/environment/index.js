@@ -18,8 +18,8 @@ module.exports = {
         tableName: 'knex_migrations'
       },
     },
-    connection: process.env.DB_CONNECTION || 'postgres://screen:supasecretpassword@localhost:5434/screen',
   },
+  dbConnection: process.env.DB_CONNECTION || 'postgres://screen:supasecretpassword@localhost:5434/screen',
   tvDb: {
     apikey: process.env.TVDB_API_KEY,
     username: process.env.TVDB_USERNAME,

@@ -1,4 +1,4 @@
-import { BaseError } from './BaseError';
+import { BaseError } from './baseError';
 
 export class InternalServerError extends BaseError {
   constructor(errorString: string) {
