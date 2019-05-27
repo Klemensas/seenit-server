@@ -15,7 +15,7 @@ export class AuthRouter extends BaseRouter {
         return res.status(401).json({ message: 'Email or password incorrect' });
       }
       const token = Auth.signToken(user);
-      res.json({ token });
+      res.json({ token, user });
     })(req, res, next));
   }
 }

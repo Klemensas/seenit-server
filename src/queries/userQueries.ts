@@ -22,6 +22,12 @@ export function getFullUser(where: Partial<User>, connection: Transaction | Knex
     .findOne(where);
 }
 
+export function getUsers(where: Partial<User>, connection: Transaction | Knex = knex) {
+  return User
+    .query(connection)
+    .where(where);
+}
+
 export function createUser(user: Partial<User>, connection: Transaction | Knex = knex) {
   return User
     .query(connection)

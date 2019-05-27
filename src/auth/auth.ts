@@ -4,7 +4,7 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as BearerStrategy } from 'passport-http-bearer';
 import * as bcrypt from 'bcrypt';
 
-import { getUserById, getFullUser } from '../queries/user';
+import { getUserById, getFullUser, getUser } from '../queries/userQueries';
 import { User } from '../models/user';
 import { config } from '../config';
 import { AuthError } from '../errors/authError';
@@ -24,8 +24,21 @@ export class Auth {
       expiresIn: config.sessionLength,
     });
   }
-  public static isAuthenticated() {
+
+  static isAuthenticated() {
       return passport.authenticate('bearer', {session: false, failWithError: false});
+  }
+
+  static getUserFromToken(token: string) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const tokenData = jwt.verify(token, config.secrets.session) as any;
+        const user = await getUserById(tokenData.id);
+        return resolve(user);
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 
   /**
@@ -44,7 +57,10 @@ export class Auth {
         if (!user) { return done('User not found', false); }
 
         const authorized = await this.comparePasswords(password, user.password);
-        return authorized ? done(null, user) : done(null, false);
+        const cleanUser = { ...user };
+        delete cleanUser.password;
+        delete cleanUser.salt;
+        return authorized ? done(null, cleanUser) : done(null, false);
     }));
   }
 
@@ -57,15 +73,10 @@ export class Auth {
    * the authorizing user.
    */
   static useBearerStrategy() {
-    passport.use(new BearerStrategy((token, done) => {
-      jwt.verify(token, config.secrets.session, (err, tokenData) => {
-        if (err) { done(new AuthError(err.message), false); }
-
-        getUserById(tokenData.id)
-          .then((user) => done(null, user))
-          .catch((error) => done(new AuthError(error.message), false));
-      });
-    }));
+    passport.use(new BearerStrategy((token, done) => this.getUserFromToken(token)
+      .then((user) => done(null, user))
+      .catch((error) => done(new AuthError(error.message), false))
+    ));
   }
 }
 
