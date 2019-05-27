@@ -4,22 +4,27 @@ import * as compression from 'compression';
 import * as bodyParser from 'body-parser';
 import * as passport from 'passport';
 import * as errorHandler from 'errorhandler';
+import { ApolloServer } from 'apollo-server-express';
 import morgan = require('morgan');
 
-import { config } from './config';
+import { config, knex } from './config';
 import { Router } from './routes';
 import { logger } from './util/logger';
 import { InternalServerError } from './errors/internalServerError';
 import { Auth } from './auth/auth';
+import { initializeApolloServer } from './apollo';
+
+require('dotenv').config();
 
 export class Server {
   public static app: express.Express;
+  public static apolloServer: ApolloServer;
   public static async initializeApp(): Promise<http.Server> {
     try {
       Server.app = express();
       Server.configureApp();
       Server.initializeAuth();
-      Server.app.use('/test', (req, res) => res.json({ test: true }));
+
       Router.initializeRoutes(Server.app);
       Server.app.use(errorHandler);
 
@@ -45,5 +50,6 @@ export class Server {
     Server.app.use(bodyParser.json());
     Server.app.use(compression());
     Server.app.use(morgan('dev'));
+    initializeApolloServer(Server.app);
   }
 }
