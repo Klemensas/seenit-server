@@ -4,7 +4,7 @@
   "scripts": {
     "start": "npm run build && -r dotenv/config node ./build/",
     "build": "npm run clean && tsc",
-    "dev": "nodemon -e ts --exec ts-node --project ./tsconfig.json -r dotenv/config ./src",
+    "watch": "nodemon -e ts --exec ts-node --project ./tsconfig.json -r dotenv/config ./src",
     "clean": "rimraf dist",
     "seed": "ts-node ./seeds"
   },
