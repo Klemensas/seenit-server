@@ -1,7 +1,7 @@
 import { BaseModel } from './baseModel';
 import { User } from './user';
 import { Watched, ItemTypes } from './watched';
-import { gql } from 'apollo-server';
+import { gql } from 'apollo-server-express';
 import { Movie } from './movie';
 import { Tv } from './tv';
 

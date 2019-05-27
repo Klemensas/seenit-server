@@ -1,5 +1,5 @@
 import { BaseModel } from './baseModel';
-import { gql } from 'apollo-server';
+import { gql } from 'apollo-server-express';
 
 import { Watched, ItemTypes } from './watched';
 

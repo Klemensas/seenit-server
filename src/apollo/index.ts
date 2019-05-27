@@ -1,5 +1,6 @@
 import * as express from 'express';
 import { ApolloServer, AuthenticationError } from 'apollo-server-express';
+import { mergeDeep } from 'apollo-utilities';
 
 import { typeDefs as watchedTypeDefs, resolvers as watchedResolvers } from '../models/watched';
 import { typeDefs as userTypeDefs, resolvers as userResolvers } from '../models/user';
@@ -24,7 +25,8 @@ export function initializeApolloServer(app: express.Express) {
       ratingTypeDefs,
       reviewTypeDefs,
     ],
-    resolvers: [watchedResolvers, userResolvers, serviceResolvers],
+    // TODO: mergeDeep is apollo internal method, investigate use of array. Alternative solution is using makeExecutableSchema
+    resolvers: mergeDeep(watchedResolvers, userResolvers, serviceResolvers),
     context: async ({ req, res }) => {
       if (req) {
         if (req.headers.authorization) {

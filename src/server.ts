@@ -6,15 +6,16 @@ import * as passport from 'passport';
 import * as errorHandler from 'errorhandler';
 import { ApolloServer } from 'apollo-server-express';
 import morgan = require('morgan');
+import dotenv = require('dotenv');
 
-import { config, knex } from './config';
+import { config } from './config';
 import { Router } from './routes';
 import { logger } from './util/logger';
 import { InternalServerError } from './errors/internalServerError';
 import { Auth } from './auth/auth';
 import { initializeApolloServer } from './apollo';
 
-require('dotenv').config();
+dotenv.config();
 
 export class Server {
   public static app: express.Express;
@@ -40,6 +41,7 @@ export class Server {
   }
 
   private static initializeAuth() {
+    Server.app.use(passport.initialize());
     Server.app.use(passport.initialize());
     Auth.useLocalStrategy();
     Auth.useBearerStrategy();

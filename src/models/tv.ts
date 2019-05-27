@@ -1,7 +1,7 @@
 import { BaseModel } from './baseModel';
 import { Watched, ItemTypes } from './watched';
 import { Genre, Company } from './movie';
-import { gql } from 'apollo-server';
+import { gql } from 'apollo-server-express';
 
 export interface Author {
   id: number;

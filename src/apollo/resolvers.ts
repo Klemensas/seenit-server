@@ -1,5 +1,5 @@
 import { createResolver } from 'apollo-resolvers';
-import { AuthenticationError } from 'apollo-server';
+import { AuthenticationError } from 'apollo-server-express';
 
 import TMDB from '../services/TMDB';
 

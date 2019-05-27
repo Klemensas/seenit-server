@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import { QueryContext } from 'objection';
-import { gql, UserInputError, AuthenticationError } from 'apollo-server';
+import { gql, UserInputError, AuthenticationError } from 'apollo-server-express';
 
 import { BaseModel } from './baseModel';
 import { getUsers, getUserById, createUser, getFullUser } from '../queries/userQueries';

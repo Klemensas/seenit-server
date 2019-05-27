@@ -1,5 +1,5 @@
-import tmdbService, { TMDB } from './services/TMDB';
-import { tvIds } from '../seeds/util/tmdbIds';
+import tmdbService, { TMDB } from '../../src/services/TMDB';
+import { tvIds } from './tmdbIds';
 
 async function loadList(list = tvIds, tmDb: TMDB = tmdbService) {
   let loadedItems = [];
