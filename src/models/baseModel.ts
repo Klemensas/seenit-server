@@ -18,6 +18,7 @@ export class BaseModel extends DbErrors {
   '#ref'?: string;
   '#dbRef'?: string;
 
+  id: number | string;
   createdAt?: number;
   updatedAt?: number;
 
@@ -34,8 +35,8 @@ export class BaseModel extends DbErrors {
 
   $beforeInsert(queryContext) {
     const date = Date.now();
-    this.createdAt = date;
-    this.updatedAt = date;
+    this.createdAt = this.createdAt || date;
+    this.updatedAt = this.updatedAt || date;
   }
 
   $beforeUpdate(opt, queryContext) {
