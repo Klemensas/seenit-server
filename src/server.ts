@@ -11,7 +11,6 @@ import { Router } from './routes';
 import { logger } from './util/logger';
 import { InternalServerError } from './errors/internalServerError';
 import { Auth } from './auth/auth';
-import { TMDB } from './services/TMDB';
 
 export class Server {
   public static app: express.Express;
@@ -28,8 +27,6 @@ export class Server {
         logger.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
       });
 
-      const tmDb = new TMDB(config.tmDbApikey);
-      const r = await tmDb.search('apocalypse');
       return Server.app.listen(config.port);
     } catch (error) {
       throw new InternalServerError(error.message);

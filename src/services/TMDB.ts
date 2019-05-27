@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios';
+import { config } from '../config';
 
 export interface TMDBResponse<T = any> {
   results: T[];
@@ -31,7 +32,7 @@ export interface TV {
   original_language: string;
   poster_path: string;
   genre_ids: number[];
-  backdrop_path: string | number;
+  backdrop_path: string | null;
   first_air_date: string;
   origin_country: string[];
   vote_count: number;
@@ -41,19 +42,10 @@ export interface TV {
 
 export type MediaType = 'movie' | 'tv' | 'person';
 export interface Person {
-  poster_path: string;
   popularity: number;
   id: number;
-  backdrop_path: string | number;
   vote_average: number;
-  overview: string;
-  first_air_date: string;
-  origin_country: string[];
-  genre_ids: number[];
-  original_language: string;
-  vote_count: number;
   name: string;
-  original_name: string;
   profile_path: string;
   adult: string;
   known_for: Media;
@@ -84,13 +76,13 @@ export class TMDB {
   constructor(private apikey: string) {
   }
 
-  async get<T = any>(query: string, config?: AxiosRequestConfig) {
-    const response = await this.httpClient.get<T>(query, config);
-    return response.data;
+  get<T = any>(query: string, config?: AxiosRequestConfig) {
+    return this.httpClient.get<T>(query, config);
   }
 
-  async search<T = Media>(query: string, searchParams: SearchParams = {}, endpoint: 'movie' | 'tv' | 'person' | 'multi' = 'multi') {
-    return this.get<TMDBResponse<T>>('/search/' + endpoint, { params: { query, ...searchParams }});
+  async search<T = Media>(query: string, searchParams: SearchParams = { include_adult: false }, endpoint: 'movie' | 'tv' | 'person' | 'multi' = 'multi') {
+    const result = await this.get<TMDBResponse<T>>('/search/' + endpoint, { params: { query, ...searchParams }});
+    return result.data;
   }
 
   searchMovies(query: string, searchParams: SearchParams = {}) {
@@ -119,3 +111,5 @@ export class TMDB {
   //   }
   // }
 }
+
+export default new TMDB(config.tmDbApikey);
