@@ -2,6 +2,10 @@ import { BaseModel } from './baseModel';
 import { Watched, ItemTypes } from './watched';
 import { Genre, Company } from './movie';
 import { gql } from 'apollo-server-express';
+export interface TvData {
+  episode: number;
+  season: number;
+}
 
 export interface Author {
   id: number;
@@ -100,7 +104,7 @@ export class Tv extends BaseModel {
   };
 
   static jsonSchema = {
-    properties: {}
+    properties: {},
   };
 }
 
@@ -135,6 +139,11 @@ export const typeDefs = gql`
     vote_average: Float
     vote_count: Int
     tmdbId: Int
+  }
+
+  type TvData {
+    season: Int
+    episode: Int
   }
 
   type Author {

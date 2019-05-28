@@ -114,7 +114,7 @@ export const resolvers = {
     users: isAuthenticated.createResolver((parent, args, { models }) => getUsers({})),
     user: (parent, { id }, { models }) => {
       return getUserById(id);
-    }
+    },
   },
   Mutation: {
     register: async (parent, { name, email, password }, { models }) => {
@@ -149,5 +149,5 @@ export const resolvers = {
   },
   User: {
     watched: (user, args, { loaders }) => getWatched({ userId: user.id })
-  }
+  },
 }

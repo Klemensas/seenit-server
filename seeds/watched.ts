@@ -11,11 +11,24 @@ export default (knex: Knex, users: User[], itemList: any[], iterationsPerUser = 
       .reduce((items: Watched[]) => {
         if (rng() <= chance) {
           const targetItem = pickItem(rng(), itemList);
+
+          let tvData = null;
+          if (targetItem.seasons) {
+            const seasonData = pickItem(rng(), targetItem.seasons);
+            const season = seasonData.season_number;
+            const episode = Math.floor(seasonData.episode_count * rng()) + 1;
+            tvData = {
+              season,
+              episode,
+            };
+          }
+
           items.push({
             itemId: targetItem.id,
             itemType: targetItem.constructor.name,
-            tmdbId: 1,
+            tmdbId: targetItem.tmdbId,
             userId: id,
+            tvData,
           } as Watched);
         }
         return items;

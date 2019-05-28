@@ -1,7 +1,10 @@
+import { gql } from 'apollo-server-express';
+
 import { BaseModel } from './baseModel';
 import { User } from './user';
 import { Watched, ItemTypes } from './watched';
-import { gql } from 'apollo-server-express';
+import { TvData, Tv } from './tv';
+import { Movie } from './movie';
 
 export class Review extends BaseModel {
   readonly id: number;
@@ -14,8 +17,10 @@ export class Review extends BaseModel {
   watchedId?: number;
   watched?: Watched;
 
-  itemTypes: ItemTypes;
+  itemType: ItemTypes;
   itemId: number;
+  item?: Movie | Tv;
+  tvData?: TvData;
 
   static tableName = 'Review';
 
@@ -26,6 +31,22 @@ export class Review extends BaseModel {
       join: {
         from: 'Review.id',
         to: 'User.id',
+      },
+    },
+    movie: {
+      relation: BaseModel.BelongsToOneRelation,
+      modelClass: 'movie',
+      join: {
+        from: 'Review.itemId',
+        to: 'Movie.id',
+      },
+    },
+    tv: {
+      relation: BaseModel.BelongsToOneRelation,
+      modelClass: 'tv',
+      join: {
+        from: 'Review.itemId',
+        to: 'Tv.id',
       },
     },
   };
@@ -52,6 +73,7 @@ export const typeDefs = gql`
     userId: ID!
     user: User
     watched: Watched
+    tvData: TvData
   }
 
   input ReviewInput {

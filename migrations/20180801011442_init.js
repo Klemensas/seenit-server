@@ -75,7 +75,8 @@ exports.up = function(knex, Promise) {
     })
     .createTable('Watched', (table) => {
       table.increments('id').primary();
-      table.integer('tmdbId').unsigned().notNullable().unique();
+      table.integer('tmdbId').unsigned().notNullable();
+      table.jsonb('tvData');
       table.bigInteger('createdAt').unsigned().notNullable();
       table.bigInteger('updatedAt').unsigned().notNullable();
       table
@@ -95,6 +96,7 @@ exports.up = function(knex, Promise) {
       table.float('value').notNullable();
       table.string('symbol');
       table.integer('tmdbId').unsigned().notNullable();
+      table.jsonb('tvData');
       table.bigInteger('createdAt').unsigned().notNullable();
       table.bigInteger('updatedAt').unsigned().notNullable();
       table
@@ -109,6 +111,7 @@ exports.up = function(knex, Promise) {
         .references('id')
         .inTable('Watched')
         .onDelete('CASCADE');
+      table.uuid('itemId');
       table.foreign('itemId')
         .onDelete('CASCADE')
         .references(['Movie.id', 'Tv.id']);
@@ -118,6 +121,7 @@ exports.up = function(knex, Promise) {
       table.increments('id').primary();
       table.text('body').notNullable;
       table.integer('tmdbId').unsigned().notNullable();
+      table.jsonb('tvData');
       table.bigInteger('createdAt').unsigned().notNullable();
       table.bigInteger('updatedAt').unsigned().notNullable();
       table
@@ -132,6 +136,7 @@ exports.up = function(knex, Promise) {
         .references('id')
         .inTable('Watched')
         .onDelete('CASCADE');
+      table.uuid('itemId');
       table.foreign('itemId')
         .onDelete('CASCADE')
         .references(['Movie.id', 'Tv.id']);

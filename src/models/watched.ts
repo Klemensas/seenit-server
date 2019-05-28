@@ -10,7 +10,7 @@ import { isAuthenticated } from '../apollo/resolvers';
 import { getRatingByWatched } from '../queries/ratingQueries';
 import { getReviewByWatched } from '../queries/reviewQueries';
 import { Movie } from './movie';
-import { Tv } from './tv';
+import { Tv, TvData } from './tv';
 import { getMovieById, getMovieByTmdbId } from '../queries/movieQueries';
 import { getTvById, getTvByTmdbId } from '../queries/tvQueries';
 import tmdbService from '../services/TMDB';
@@ -30,6 +30,7 @@ export class Watched extends BaseModel {
   itemType: ItemTypes;
   itemId: number;
   item?: Movie | Tv;
+  tvData?: TvData;
 
   rating?: Partial<Rating>;
   review?: Partial<Review>;
@@ -110,6 +111,7 @@ export const typeDefs = gql`
     item: Item
     rating: Rating
     review: Review
+    tvData: TvData
   }
 
   extend type Query {
@@ -123,6 +125,7 @@ export const typeDefs = gql`
       mediaType: TmdbMediaType!
       rating: RatingInput
       review: ReviewInput
+      tvData: TvData
       createdAt: Float
     ): Watched!
   }
@@ -134,17 +137,19 @@ export const resolvers = {
     watched: (parent, { id }, { models }) => getWatchedById(id),
   },
   Mutation: {
-    addWatched: isAuthenticated.createResolver(async (parent, { tmdbId, mediaType, rating, review, createdAt }, { user }) => {
+    addWatched: isAuthenticated.createResolver(async (parent, { tmdbId, mediaType, tvData, rating, review, createdAt }, { user }) => {
       const userId = user.id;
       rating = rating ? {
         ...rating,
         userId,
+        tvData,
         tmdbId,
       } : null;
 
       review = review ? {
         ...review,
         userId,
+        tvData,
         tmdbId,
       } : null;
 
@@ -158,6 +163,7 @@ export const resolvers = {
       return createWatchedGraph({
         userId,
         tmdbId,
+        tvData,
         rating,
         review,
         createdAt,
