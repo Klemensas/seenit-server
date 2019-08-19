@@ -2,11 +2,12 @@
   "name": "screen",
   "version": "0.0.1",
   "scripts": {
-    "start": "npm run build && -r dotenv/config node ./dist/",
+    "start": "npm run build && node -r dotenv/config ./dist/src",
     "build": "npm run clean && tsc",
     "watch": "nodemon -e ts --exec ts-node --project ./tsconfig.json -r dotenv/config ./src",
     "clean": "rimraf dist",
-    "seed": "ts-node ./seeds"
+    "seed": "ts-node ./seeds",
+    "migrate:latest": "knex migrate:latest"
   },
   "dependencies": {
     "apollo-resolvers": "^1.4.1",
@@ -27,6 +28,7 @@
     "jest": "^24.8.0",
     "jsonwebtoken": "^8.3.0",
     "knex": "^0.16.5",
+    "line-by-line": "^0.1.6",
     "morgan": "^1.9.0",
     "objection": "^1.2.0",
     "passport": "^0.4.0",
