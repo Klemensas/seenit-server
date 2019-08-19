@@ -39,6 +39,32 @@ export interface TV {
   vote_count: number;
   vote_average: number;
   popularity: number;
+  seasons: TmdbSeason[];
+}
+
+export interface TmdbSeason {
+  id: number;
+  name?: string;
+  overview?: string;
+  air_date?: string;
+  episode_count?: number;
+  poster_path?: string;
+  season_number?: number;
+  episodes?: TmdbEpisode[];
+}
+
+export interface TmdbEpisode {
+  id: number;
+  air_date?: string;
+  episode_number?: number;
+  name?: string;
+  overview?: string;
+  production_code?: string;
+  season_number?: number;
+  show_id?: number;
+  still_path?: string;
+  vote_average?: number;
+  vote_count?: number;
 }
 
 export type MediaType = 'movie' | 'tv';
@@ -106,6 +132,32 @@ export class TMDB {
       remainingLimit: +headers['x-ratelimit-remaining'],
       nextBatch: +headers['x-ratelimit-reset'],
     };
+  }
+
+  async getTvWithEpisodes(tvId: number, seasonOffset = 0) {
+    const seasonsPerCall = 20;
+
+    const params = { append_to_response: Array.from({ length: seasonsPerCall }).map((a, i) => `season/${seasonOffset + i}`).join(',') };
+
+    let { data: fullData } = await this.get<TV>('/tv/' + tvId, { params });
+
+    if (fullData.seasons && fullData.seasons.length - seasonOffset > seasonsPerCall) {
+      const missingData = await this.getTvWithEpisodes(tvId, seasonOffset + seasonsPerCall);
+      fullData = { ...fullData, ...missingData };
+    }
+
+    // Bail out if offset present
+    if (seasonOffset) { return fullData; }
+
+    // Add episode data to season array and remove individual season props
+    fullData.seasons.forEach((season, i) => {
+      const seasonTarget = `season/${season.season_number}`;
+      fullData.seasons[i] = fullData[seasonTarget];
+
+      delete fullData[seasonTarget];
+    });
+
+    return fullData;
   }
 
   // private async refreshToken() {
