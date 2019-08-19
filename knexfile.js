@@ -1,6 +1,6 @@
 const config = require('./src/config/environment'); 
 
 module.exports = {
-  client: 'pg',
+  client: 'postgresql',
   connection: config.dbConnection,
 };

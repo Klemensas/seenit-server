@@ -15,7 +15,7 @@ exports.up = function(knex, Promise) {
       table.boolean('adult');
       table.string('backdrop_path');
       table.jsonb('belongs_to_collection');
-      table.integer('budget').unsigned();
+      table.bigInteger('budget').unsigned();
       table.specificType('genres', 'jsonb[]');
       table.string('homepage');
       table.string('imdb_id');
@@ -27,7 +27,7 @@ exports.up = function(knex, Promise) {
       table.specificType('production_companies', 'jsonb[]');
       table.specificType('production_countries', 'jsonb[]');
       table.string('release_date');
-      table.integer('revenue').unsigned();
+      table.bigInteger('revenue').unsigned();
       table.integer('runtime').unsigned();
       table.specificType('spoken_languages', 'jsonb[]');
       table.string('status');

@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios';
+
 import { config } from '../config';
 
 export interface TMDBResponse<T = any> {
@@ -40,7 +41,9 @@ export interface TV {
   popularity: number;
 }
 
-export type MediaType = 'movie' | 'tv' | 'person';
+export type MediaType = 'movie' | 'tv';
+export type AllMediaType = MediaType | 'person';
+
 export interface Person {
   popularity: number;
   id: number;

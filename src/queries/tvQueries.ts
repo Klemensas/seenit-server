@@ -2,7 +2,7 @@ import * as Knex from 'knex';
 import { Transaction } from 'objection';
 
 import { knex } from '../config';
-import { Tv } from '../models/Tv';
+import { Tv } from '../models/tv';
 
 export function getTvById(id: number, connection: Transaction | Knex = knex) {
   return Tv
