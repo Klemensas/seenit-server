@@ -18,6 +18,7 @@
     "body-parser": "^1.18.3",
     "bunyan": "^1.8.12",
     "compression": "^1.7.3",
+    "cross-spawn": "^6.0.5",
     "db-errors": "^0.2.2",
     "debug": "^4.1.1",
     "dotenv": "^8.0.0",
@@ -38,6 +39,7 @@
     "rimraf": "^2.6.2"
   },
   "devDependencies": {
+    "@types/cross-spawn": "^6.0.0",
     "@types/axios": "^0.14.0",
     "@types/bcrypt": "^3.0.0",
     "@types/compression": "0.0.36",

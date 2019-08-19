@@ -6,6 +6,7 @@ module.exports = {
   env,
   ip: process.env.IP || '0.0.0.0',
   port: process.env.PORT || 9000,
+  exportPort: process.env.EXPORT_PORT || 9001,
   root: path.normalize(path.join(__dirname, '/../../..')),
   secrets: {
     session: process.env.APP_SECRET || 'secret',
