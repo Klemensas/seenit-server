@@ -100,6 +100,14 @@ export class TMDB {
     return this.search<Person>(query, searchParams, 'person');
   }
 
+  extractLimits(headers: object) {
+    return {
+      limit: +headers['x-ratelimit-limit'],
+      remainingLimit: +headers['x-ratelimit-remaining'],
+      nextBatch: +headers['x-ratelimit-reset'],
+    };
+  }
+
   // private async refreshToken() {
   //   const response = await this.httpClient.get<TokenResponse>('/refresh_token');
   //   console.log('new token!', response);
