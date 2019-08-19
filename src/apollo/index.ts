@@ -5,7 +5,7 @@ import { mergeDeep } from 'apollo-utilities';
 import { typeDefs as watchedTypeDefs, resolvers as watchedResolvers } from '../models/watched';
 import { typeDefs as userTypeDefs, resolvers as userResolvers } from '../models/user';
 import { typeDefs as movieTypeDefs } from '../models/movie';
-import { typeDefs as tvTypeDefs } from '../models/tv';
+import { typeDefs as tvTypeDefs, resolvers as tvResolvers } from '../models/tv';
 import { typeDefs as ratingTypeDefs } from '../models/rating';
 import { typeDefs as reviewTypeDefs } from '../models/review';
 import { Auth } from '../auth/auth';
@@ -26,7 +26,7 @@ export function initializeApolloServer(app: express.Express) {
       reviewTypeDefs,
     ],
     // TODO: mergeDeep is apollo internal method, investigate use of array. Alternative solution is using makeExecutableSchema
-    resolvers: mergeDeep(watchedResolvers, userResolvers, serviceResolvers),
+    resolvers: mergeDeep(watchedResolvers, userResolvers, serviceResolvers, tvResolvers),
     context: async ({ req, res }) => {
       if (req) {
         if (req.headers.authorization) {

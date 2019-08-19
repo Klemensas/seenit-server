@@ -28,7 +28,7 @@ export function getTvByWatched(watchedId: number, connection: Transaction | Knex
     .findOne({ watchedId });
 }
 
-export function create(tv: Partial<Tv>, connection: Transaction | Knex = knex) {
+export function createTv(tv: Partial<Tv>, connection: Transaction | Knex = knex) {
   return Tv
     .query(connection)
     .insert(tv);

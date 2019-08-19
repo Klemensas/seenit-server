@@ -1,7 +1,11 @@
+import { gql, UserInputError } from 'apollo-server-express';
+
 import { BaseModel } from './baseModel';
 import { Watched, ItemTypes } from './watched';
 import { Genre, Company } from './movie';
-import { gql } from 'apollo-server-express';
+import { getTvByTmdbId, createTv } from '../queries/tvQueries';
+import tmdbService from '../services/TMDB';
+
 export interface TvData {
   episode: number;
   season: number;
@@ -141,11 +145,6 @@ export const typeDefs = gql`
     tmdbId: Int
   }
 
-  type TvData {
-    season: Int
-    episode: Int
-  }
-
   type Author {
     id: Int
     credit_id: Int
@@ -184,4 +183,39 @@ export const typeDefs = gql`
     poster_path: String
     season_number: Int
   }
+
+  type TvData {
+    season: Int
+    episode: Int
+  }
+
+  input TvDataInput {
+    episode: Int
+    season: Int
+  }
+
+  extend type Query {
+    tv(tmdbId: Int): Tv
+  }
 `;
+
+export const resolvers = {
+  Query: {
+    tv: async (parent, { tmdbId }, { models }) => {
+      try {
+        const tv = await getTvByTmdbId(tmdbId);
+
+        if (tv) { return tv; }
+
+        const response = await tmdbService.get(`tv/${tmdbId}`);
+        const { id, ...tmdbTv} = response.data;
+        return createTv({
+          ...tmdbTv,
+          tmdbId: id,
+        });
+      } catch (err) {
+        throw new UserInputError(err.message);
+      }
+    },
+  },
+};

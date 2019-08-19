@@ -125,7 +125,7 @@ export const typeDefs = gql`
       mediaType: TmdbMediaType!
       rating: RatingInput
       review: ReviewInput
-      tvData: TvData
+      tvData: TvDataInput
       createdAt: Float
     ): Watched!
   }
