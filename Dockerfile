@@ -1,4 +1,5 @@
-FROM mhart/alpine-node:7.8.0
+FROM node:10.15.3
+ARG DB_CONNECTION
 
 ADD . /app
 WORKDIR /app
@@ -8,5 +9,3 @@ RUN npm run build
 
 EXPOSE 3000
 VOLUME /app
-
-ENTRYPOINT [ "node",  "dist/index.js" ]

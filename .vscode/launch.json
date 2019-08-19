@@ -16,6 +16,17 @@
       "protocol": "inspector"
     }, 
     {
+      "name": "Run daily exports",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/dailyExport.ts"],
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register", "-r", "dotenv/config"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}",
+      "protocol": "inspector"
+    }, 
+    {
       "name": "Run seed",
       "type": "node",
       "request": "launch",

@@ -1,0 +1,37 @@
+version: "3.7"
+
+services:
+  app:
+    image: klemensas/screen:0.0.3
+    restart: always
+    # build:
+    #   context: .
+    #   args:
+    #     - DB_CONNECTION=postgres://screen:supasecretpassword@postgres:5434/screen
+    ports:
+      - "80:9001"
+    environment:
+      # - EXPORT_DATE=2019-06-28
+      - NODE_ENV=production
+      - TMDB_API_KEY=d2e229b3cd34fc38ed94e2929dc631e9
+      - DB_CONNECTION=postgres://screen:supasecretpassword@postgres/screen
+    command: sh -c "sleep 5 && npm run migrate:latest && node dist/src/export/dailyExport.js"
+    depends_on:
+      - postgres
+
+  postgres:
+    restart: always
+    image: sameersbn/postgresql:9.6-2
+    environment:
+      - DB_USER=screen
+      - DB_PASS=supasecretpassword
+      - DB_NAME=screen
+      - DB_EXTENSION="uuid-ossp"
+    ports:
+      - "5434:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    command: -c "max_stack_depth=6MB"
+volumes:
+  dbdata:
+    driver: local
