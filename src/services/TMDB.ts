@@ -134,30 +134,42 @@ export class TMDB {
     };
   }
 
-  async getTvWithEpisodes(tvId: number, seasonOffset = 0) {
+  getTvWithEpisodes = async (tvId: number, seasons: TmdbSeason[] = []) => {
     const seasonsPerCall = 20;
 
-    const params = { append_to_response: Array.from({ length: seasonsPerCall }).map((a, i) => `season/${seasonOffset + i}`).join(',') };
+    const targetSeasons = seasons.length ?
+      seasons.slice(0, seasonsPerCall).map(({ season_number }) => season_number) :
+      Array.from({ length: seasonsPerCall }).map((a, i) => i);
+    const params = { append_to_response: targetSeasons.map((name) => `season/${name}`).join(',') };
 
-    let { data: fullData } = await this.get<TV>('/tv/' + tvId, { params });
+    let { data, headers } = await this.get<TV>('/tv/' + tvId, { params, timeout: 0 });
 
-    if (fullData.seasons && fullData.seasons.length - seasonOffset > seasonsPerCall) {
-      const missingData = await this.getTvWithEpisodes(tvId, seasonOffset + seasonsPerCall);
-      fullData = { ...fullData, ...missingData };
+    const missingSeasons = this.missingSeasonData(data, seasons);
+    if (missingSeasons && missingSeasons.length) {
+      const missingData = await this.getTvWithEpisodes(tvId, missingSeasons);
+      data = { ...data, ...missingData.data };
+      headers = missingData.headers;
     }
 
     // Bail out if offset present
-    if (seasonOffset) { return fullData; }
+    if (seasons.length) { return { data, headers }; }
 
     // Add episode data to season array and remove individual season props
-    fullData.seasons.forEach((season, i) => {
+    data.seasons.forEach((season, i) => {
       const seasonTarget = `season/${season.season_number}`;
-      fullData.seasons[i] = fullData[seasonTarget];
+      data.seasons[i] = { ...season, ...data[seasonTarget] };
 
-      delete fullData[seasonTarget];
+      delete data[seasonTarget];
     });
 
-    return fullData;
+    return { data, headers };
+  }
+
+  missingSeasonData(item: TV, seasons: TmdbSeason[]) {
+    if (!item.seasons || !item.seasons.length) { return null; }
+
+    const target = seasons.length ? seasons : item.seasons;
+    return target.filter(({ season_number }) => !item[`season/${season_number}`]);
   }
 
   // private async refreshToken() {
