@@ -17,7 +17,7 @@ exports.up = function(knex, Promise) {
       table.jsonb('belongs_to_collection');
       table.bigInteger('budget').unsigned();
       table.specificType('genres', 'jsonb[]');
-      table.string('homepage');
+      table.text('homepage');
       table.string('imdb_id');
       table.string('original_language');
       table.string('original_title');
@@ -31,7 +31,7 @@ exports.up = function(knex, Promise) {
       table.integer('runtime').unsigned();
       table.specificType('spoken_languages', 'jsonb[]');
       table.string('status');
-      table.string('tagline');
+      table.text('tagline');
       table.string('title');
       table.boolean('video');
       table.float('vote_average');
@@ -47,7 +47,7 @@ exports.up = function(knex, Promise) {
       table.specificType('episode_run_time', 'integer[]');
       table.string('first_air_date');
       table.specificType('genres', 'jsonb[]');
-      table.string('homepage');
+      table.text('homepage');
       table.boolean('in_production');
       table.specificType('languages', 'text[]');
       table.string('last_air_date');
@@ -64,7 +64,6 @@ exports.up = function(knex, Promise) {
       table.float('popularity');
       table.string('poster_path');
       table.specificType('production_companies', 'jsonb[]');
-      table.specificType('seasons', 'jsonb[]');
       table.string('status');
       table.string('type');
       table.float('vote_average');

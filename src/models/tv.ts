@@ -5,6 +5,7 @@ import { Watched, ItemTypes } from './watched';
 import { Genre, Company } from './movie';
 import { getTvByTmdbId, createTv } from '../queries/tvQueries';
 import tmdbService from '../services/TMDB';
+import { Season } from './season';
 
 export interface TvData {
   episode: number;
@@ -40,16 +41,6 @@ export interface Network {
   origin_country?: string;
 }
 
-export interface Season {
-  id: number;
-  name?: string;
-  overview?: string;
-  air_date?: string;
-  episode_count?: number;
-  poster_path?: string;
-  season_number?: number;
-}
-
 // tslint:disable: variable-name
 export class Tv extends BaseModel {
   readonly id: string;
@@ -75,7 +66,6 @@ export class Tv extends BaseModel {
   popularity?: number;
   poster_path?: string;
   production_companies?: Company[];
-  seasons?: Season[];
   status?: string;
   type?: string;
   vote_average?: number;
@@ -85,6 +75,7 @@ export class Tv extends BaseModel {
   tmdbId: number;
 
   watched?: Watched;
+  seasons?: Season[];
 
   static tableName = 'Tv';
 
@@ -105,6 +96,14 @@ export class Tv extends BaseModel {
         model.itemType = ItemTypes.Tv;
       },
     },
+    seasons: {
+      relation: BaseModel.HasManyRelation,
+      modelClass: 'season',
+      join: {
+        from: 'Tv.id',
+        to: 'Season.tvId',
+      }
+    }
   };
 
   static jsonSchema = {

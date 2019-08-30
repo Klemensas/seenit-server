@@ -2,9 +2,9 @@ exports.up = function(knex, Promise) {
   return knex.schema
     .createTable('Season', (table) => {
       table.uuid('id').defaultTo(knex.raw('uuid_generate_v4()')).primary();
-      table.string('name');
-      table.string('overview');
-      table.bigInteger('air_date').unsigned().notNullable();
+      table.text('name');
+      table.text('overview');
+      table.bigInteger('air_date').unsigned();
       table.integer('episode_count');
       table.string('poster_path');
       table.integer('season_number');
@@ -19,14 +19,16 @@ exports.up = function(knex, Promise) {
     })
     .createTable('Episode', (table) => {
       table.uuid('id').defaultTo(knex.raw('uuid_generate_v4()')).primary();
-      table.string('name');
-      table.string('overview');
+      table.text('name');
+      table.text('overview');
       table.integer('episode_number');
-      table.bigInteger('air_date').unsigned().notNullable();
+      table.bigInteger('air_date').unsigned();
       table.string('production_code');
       table.string('still_path');
-      table.integer('vote_average');
+      table.float('vote_average');
       table.integer('vote_count');
+      table.specificType('crew', 'jsonb[]');
+      table.specificType('guest_stars', 'jsonb[]');
       table.integer('tmdbId').unsigned().notNullable();
       table
         .uuid('seasonId')

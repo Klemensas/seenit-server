@@ -8,13 +8,14 @@ export class Episode extends BaseModel {
   name?: string;
   overview?: string;
   episode_number?: number;
-  air_date?: string;
+  air_date?: number | string;
   production_code?: string;
   still_path?: string;
   vote_average?: number;
   vote_count?: number;
-  // crew: any[];
-  // guest_stars: any[];
+  // not really used but added for consistency with api
+  crew: any[];
+  guest_stars: any[];
 
   // tslint:enable: variable-name
   tmdbId: number;

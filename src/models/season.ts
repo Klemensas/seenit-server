@@ -7,7 +7,7 @@ export class Season extends BaseModel {
   readonly id: string;
   name?: string;
   overview?: string;
-  air_date?: string;
+  air_date?: number | string;
   episode_count?: number;
   poster_path?: string;
   season_number?: number;
@@ -15,7 +15,7 @@ export class Season extends BaseModel {
   // tslint:enable: variable-name
   tmdbId: number;
 
-  tvId: number;
+  tvId: string;
   tv?: Tv;
   episodes: Episode[];
 
