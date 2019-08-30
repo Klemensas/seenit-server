@@ -8,6 +8,7 @@ import { knex } from '../config';
 import TMDB, { MediaType } from '../services/TMDB';
 import { Movie } from '../models/movie';
 import { Tv } from '../models/tv';
+import { formatTvItems } from './changes';
 
 export enum ExportPaths {
   'movie' = 'http://files.tmdb.org/p/exports/movie_ids_',
@@ -87,7 +88,6 @@ export class DailyExports {
     let batch = [];
     let requestBatch = [];
     let remainingRequests = null;
-    const model = type === 'movie' ? Movie : Tv;
 
     return async (line: string, reader: any, stored: Set<number>) => {
       try {
@@ -136,7 +136,7 @@ export class DailyExports {
           return;
         }
 
-        await this.storeBatch<typeof model>(batch, model);
+        await this.storeBatch(batch, type);
         batch = [];
 
         setTimeout(() => {
@@ -164,17 +164,23 @@ export class DailyExports {
     });
   }
 
-  async storeBatch<T>(batch: any[], model: typeof Movie | typeof Tv): Promise<T[]> {
+  async storeBatch<T>(batch: any[], type: MediaType): Promise<T[]> {
+    const model = type === 'movie' ? Movie : Tv;
     const tmdbIds = batch.map(({ id }) => id);
 
     const items = await (model as any).query(knex).whereIn('tmdbId', tmdbIds);
     const insertedTmdbIds = items.map(({ tmdbId }) => tmdbId);
 
     const filteredBatch = batch.filter(({ id }) => !insertedTmdbIds.includes(id));
-    return (model as any).query(knex).insert(filteredBatch.map(({ id, ...item }) => ({
-      ...item,
-      tmdbId: id,
-    })));
+
+    return (model as any).query(knex).insertGraph(
+      type === 'tv' ?
+        formatTvItems([], batch) :
+        filteredBatch.map(({ id, ...item }) => ({
+          ...item,
+          tmdbId: id,
+        })),
+    );
   }
 
   static async storeDaysExport(date: Date, tmdbUrl: ExportPaths) {
@@ -213,9 +219,9 @@ export class DailyExports {
   }
 
   static async fetchItem(id: number, type: MediaType) {
-    const { data, headers } = await TMDB.get(`${type}/${id}`, {
+    const { data, headers } = await (type === 'tv' ? TMDB.getTvWithEpisodes(id) :  TMDB.get(`${type}/${id}`, {
       timeout: 0,
-    });
+    }));
 
     return {
       data,
@@ -249,9 +255,9 @@ export class DailyExports {
           await new Promise((resolve) => setTimeout(() => resolve(), retryAfter * 1000));
           return this.fetchItem(id, type);
         }
-
-        throw err;
       }
+
+      throw err;
     }
   }
 
