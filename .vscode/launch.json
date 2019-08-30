@@ -19,7 +19,7 @@
       "name": "Run daily exports",
       "type": "node",
       "request": "launch",
-      "args": ["src/dailyExport.ts"],
+      "args": ["src/export/changes.ts"],
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register", "-r", "dotenv/config"],
       "sourceMaps": true,
       "outputCapture": "std",
