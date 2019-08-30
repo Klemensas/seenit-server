@@ -16,7 +16,7 @@ switch (config.env) {
         stream: process.stdout,
       }, {
         level: 'error',
-        path: 'error.log',
+        path: 'errors.log',
       }, {
         level: 'error',
         stream: process.stdout,

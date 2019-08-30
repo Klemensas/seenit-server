@@ -1,5 +1,5 @@
 .env
 dist
 node_modules
-error.log
+errors.log
 src/export/files
