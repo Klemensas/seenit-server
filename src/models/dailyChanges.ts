@@ -3,23 +3,20 @@ import { MediaType } from '../services/TMDB';
 
 export class DailyChanges extends BaseModel {
   readonly id: number;
+  batch: number;
   type: MediaType;
-  inserted: number;
-  updated: number;
-  deleted: number;
+  changes: any;
 
   static tableName = 'DailyChanges';
 
   static jsonSchema = {
     type: 'object',
-    required: ['type', 'inserted', 'updated', 'deleted'],
+    required: ['batch', 'type', 'changes'],
 
     properties: {
       id: { type: 'integer' },
+      batch: { type: 'integer' },
       type: { type: 'string' },
-      inserted: { type: 'integer' },
-      updated: { type: 'integer' },
-      deleted: { type: 'integer' },
     },
   };
 }
