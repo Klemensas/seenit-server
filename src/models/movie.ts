@@ -1,6 +1,8 @@
-import { BaseModel } from './baseModel';
+import { QueryContext, ModelOptions } from 'objection';
 import { gql } from 'apollo-server-express';
 
+import { knex } from '../config';
+import { BaseModel } from './baseModel';
 import { Watched, ItemTypes } from './watched';
 
 export interface Genre {
@@ -43,6 +45,7 @@ export type MovieStatus = 'Rumored'
 // tslint:disable: variable-name
 export class Movie extends BaseModel {
   readonly id: string;
+  title?: string;
   adult?: boolean;
   backdrop_path?: string;
   belongs_to_collection?: Collection;
@@ -63,10 +66,10 @@ export class Movie extends BaseModel {
   spoken_languages?: Language[];
   status?: MovieStatus;
   tagline?: string;
-  title?: string;
   video?: boolean;
   vote_average?: number;
   vote_count?: number;
+  titleVector?: string;
 
   // tslint:enable: variable-name
   tmdbId: number;
@@ -97,6 +100,20 @@ export class Movie extends BaseModel {
   static jsonSchema = {
     properties: {},
   };
+
+  async $beforeInsert(queryContext: QueryContext) {
+    await super.$beforeInsert(queryContext);
+
+    this.titleVector = knex.raw(`to_tsvector('${this.title}')`) as any;
+  }
+
+  async $beforeUpdate(opt: ModelOptions, queryContext: QueryContext) {
+    await super.$beforeUpdate(opt, queryContext);
+
+    if (this.title) {
+      this.titleVector = knex.raw(`to_tsvector('${this.title}')`) as any;
+    }
+  }
 }
 
 export const typeDefs = gql`

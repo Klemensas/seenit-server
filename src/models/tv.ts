@@ -1,5 +1,7 @@
+import { QueryContext, ModelOptions } from 'objection';
 import { gql, UserInputError } from 'apollo-server-express';
 
+import { knex } from '../config';
 import { BaseModel } from './baseModel';
 import { Watched, ItemTypes } from './watched';
 import { Genre, Company } from './movie';
@@ -70,6 +72,7 @@ export class Tv extends BaseModel {
   type?: string;
   vote_average?: number;
   vote_count?: number;
+  titleVector?: string;
 
   // tslint:enable: variable-name
   tmdbId: number;
@@ -109,6 +112,20 @@ export class Tv extends BaseModel {
   static jsonSchema = {
     properties: {},
   };
+
+  async $beforeInsert(queryContext: QueryContext) {
+    await super.$beforeInsert(queryContext);
+
+    this.titleVector = knex.raw(`to_tsvector('${this.name}')`) as any;
+  }
+
+  async $beforeUpdate(opt: ModelOptions, queryContext: QueryContext) {
+    await super.$beforeUpdate(opt, queryContext);
+
+    if (this.name) {
+      this.titleVector = knex.raw(`to_tsvector('${this.name}')`) as any;
+    }
+  }
 }
 
 export const typeDefs = gql`
