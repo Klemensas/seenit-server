@@ -5,9 +5,9 @@ import * as path from 'path';
 import * as LineByLineReader from 'line-by-line';
 
 import { knex } from '../config';
-import TMDB, { MediaType } from '../services/TMDB';
 import { Movie } from '../models/movie';
 import { Tv } from '../models/tv';
+import TMDB, { MediaType } from '../services/TMDB';
 import { formatTvItems } from './changes';
 
 export enum ExportPaths {
@@ -27,6 +27,15 @@ export interface ExportJob {
   start: Date;
   skipStored: boolean;
   skippedLines: number;
+  averageTime: number;
+  itemsStored: number;
+  longestItem: LongestItem;
+}
+
+export interface LongestItem {
+  time: number;
+  id: number;
+  type: MediaType;
 }
 
 export class DailyExports {
@@ -70,6 +79,13 @@ export class DailyExports {
         movie: 0,
         tv: 0,
       },
+      longestItem: {
+        id: null,
+        time: null,
+        type: null,
+      },
+      itemsStored: 0,
+      averageTime: 0,
       skipStored,
       skippedLines: 0,
       start: new Date(),
@@ -85,12 +101,11 @@ export class DailyExports {
   }
 
   parseLine(type: MediaType) {
-    let batch = [];
-    let requestBatch = [];
     let remainingRequests = null;
 
     return async (line: string, reader: any, stored: Set<number>) => {
       try {
+        const itemStart = new Date();
         const parsedData = JSON.parse(line);
         const lineLength = DailyExports.getBinarySize(line) + 1;
         this.exportJob.progress[type] += lineLength;
@@ -107,50 +122,42 @@ export class DailyExports {
           }
         }
 
-        if (remainingRequests === null) {
-          reader.pause();
-          const { data, remainingLimit } = await DailyExports.fetchItemWithDeletion(parsedData.id, type);
-          remainingRequests = remainingLimit;
-          if (data) { batch.push(data); }
-          reader.resume();
-          return;
-        }
-
-        requestBatch.push(DailyExports.fetchItemWithDeletion(parsedData.id, type));
-        remainingRequests--;
-
-        if (remainingRequests) { return; }
-
         reader.pause();
-        const results = await Promise.all(requestBatch);
+        const { data, remainingLimit, nextBatch } = await DailyExports.fetchItemWithDeletion(parsedData.id, type);
+        remainingRequests = remainingLimit;
 
-        results
-          .filter(({ data }) => !!data)
-          .forEach(({ data }) => batch.push(data));
-        requestBatch = [];
-        const lastRequest = DailyExports.lastBatchItem(results);
-
-        if (lastRequest.remainingLimit) {
-          remainingRequests = lastRequest.remainingLimit;
+        if (!data) {
           reader.resume();
           return;
         }
 
-        await this.storeBatch(batch, type);
-        batch = [];
+        await this.storeBatch([data], type);
+        const itemEnd = new Date();
+        this.exportJob.itemsStored++;
+        this.exportJob.averageTime = (+itemEnd - +this.exportJob.start) / this.exportJob.itemsStored;
 
-        setTimeout(() => {
-          remainingRequests = lastRequest.limit;
-          reader.resume();
-        }, (lastRequest.nextBatch - Math.floor(Date.now() / 1000)) * 1000 + 1000);
+        if (!remainingLimit) {
+          await new Promise((resolve) => setTimeout(resolve, (nextBatch - Math.floor(Date.now() / 1000)) * 1000 + 1000));
+        }
+
+        this.updateLongest({
+          type,
+          id: parsedData.id,
+          time: +itemEnd - +itemStart,
+        })
+        reader.resume();
         return;
       } catch (err) {
         const stream = fs.createWriteStream(path.resolve(__dirname, 'errors.log'), { flags: 'a' });
-        stream.write(`${err.toString()}-${err.response ? JSON.stringify(err.response.headers) : ''}-${remainingRequests}`, (error) => {
+        stream.write(`${err.toString()}-${err.response ? JSON.stringify(err.response.headers) : ''}-${remainingRequests}\n`, (error) => {
           process.exit(1);
         });
       }
     };
+  }
+
+  updateLongest(itemLength: LongestItem) {
+    this.exportJob.longestItem = itemLength.time > this.exportJob.longestItem.time ? itemLength : this.exportJob.longestItem;
   }
 
   async readFileLines(storagePath: string, model: typeof Movie | typeof Tv, handler: (line: string, reader: any, stored: Set<number>) => void) {
@@ -175,7 +182,7 @@ export class DailyExports {
 
     return (model as any).query(knex).insertGraph(
       type === 'tv' ?
-        formatTvItems([], batch) :
+        formatTvItems([], filteredBatch) :
         filteredBatch.map(({ id, ...item }) => ({
           ...item,
           tmdbId: id,
@@ -239,7 +246,7 @@ export class DailyExports {
         const limits = TMDB.extractLimits(err.response.headers);
         if (err.response.status === 404) {
           const stream = fs.createWriteStream(path.resolve(__dirname, 'errors.log'), { flags: 'a' });
-          stream.write(`No item - ${id}`);
+          stream.write(`No item - ${id}\n`);
 
           return {
             data: null,
@@ -251,7 +258,7 @@ export class DailyExports {
         if (err.response.status === 429) {
           const retryAfter = +err.response.headers['retry-after'];
           const stream = fs.createWriteStream(path.resolve(__dirname, 'errors.log'), { flags: 'a' });
-          stream.write(`Trying to recover - ${id} -- ${err.toString()} \n`);
+          stream.write(`Trying to recover - ${id} -- ${err.toString()}\n`);
           await new Promise((resolve) => setTimeout(() => resolve(), retryAfter * 1000));
           return this.fetchItem(id, type);
         }
