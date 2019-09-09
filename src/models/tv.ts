@@ -5,9 +5,9 @@ import { knex } from '../config';
 import { BaseModel } from './baseModel';
 import { Watched, ItemTypes } from './watched';
 import { Genre, Company } from './movie';
-import { getTvByTmdbId, createTv } from '../queries/tvQueries';
-import tmdbService from '../services/TMDB';
+import { getTvById } from '../queries/tvQueries';
 import { Season } from './season';
+import { Episode } from './episode';
 
 export interface TvData {
   episode: number;
@@ -159,6 +159,8 @@ export const typeDefs = gql`
     vote_average: Float
     vote_count: Int
     tmdbId: Int
+    season: [Season]
+    watched: [Watched]
   }
 
   type Author {
@@ -169,35 +171,11 @@ export const typeDefs = gql`
     profile_path: String
   }
 
-  type Episode {
-    id: Int
-    air_date: String
-    episode_number: Int
-    name: String
-    overview: String
-    production_code: String
-    season_number: Int
-    show_id: Int
-    still_path: String
-    vote_average: Float
-    vote_count: Int
-  }
-
   type Network {
     id: Int
     name: String
     logo_path: String
     origin_country: String
-  }
-
-  type Season {
-    id: Int
-    name: String
-    overview: String
-    air_date: String
-    episode_count: Int
-    poster_path: String
-    season_number: Int
   }
 
   type TvData {
@@ -211,27 +189,34 @@ export const typeDefs = gql`
   }
 
   extend type Query {
-    tv(tmdbId: Int): Tv
+    tv(id: ID): Tv
   }
 `;
 
 export const resolvers = {
   Query: {
-    tv: async (parent, { tmdbId }, { models }) => {
+    tv: async (parent, { id }, { models }) => {
       try {
-        const tv = await getTvByTmdbId(tmdbId);
+        const tv = await getTvById(id);
 
-        if (tv) { return tv; }
-
-        const response = await tmdbService.get(`tv/${tmdbId}`);
-        const { id, ...tmdbTv} = response.data;
-        return createTv({
-          ...tmdbTv,
-          tmdbId: id,
-        });
+        return tv;
       } catch (err) {
         throw new UserInputError(err.message);
       }
     },
   },
+  Tv: {
+    seasons: async (tv: Tv, args, { loaders }) => {
+      try {
+        const s = await Episode.query().whereIn('tvId', [tv.id]).debug();
+        // const s = await Season.query().whereRaw(`"id::text" = ('?')`, [`'2b0dd1b3-6745-4b3f-9bfc-765f4fe0f907'`]).debug();
+        // const s = await getSeasonsByTvId(tv.id).debug()
+        console.log('wooo', tv.id, s.length)
+        return s;
+      } catch (err) {
+        console.log('eee', err);
+        throw err;
+      }
+    },
+  }
 };

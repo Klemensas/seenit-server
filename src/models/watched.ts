@@ -13,7 +13,6 @@ import { Movie } from './movie';
 import { Tv, TvData } from './tv';
 import { getMovieById, getMovieByTmdbId } from '../queries/movieQueries';
 import { getTvById, getTvByTmdbId } from '../queries/tvQueries';
-import tmdbService from '../services/TMDB';
 
 export const enum ItemTypes {
   'Movie' = 'Movie',
@@ -121,7 +120,7 @@ export const typeDefs = gql`
 
   extend type Mutation {
     addWatched(
-      tmdbId: Int!
+      itemId: ID!
       mediaType: TmdbMediaType!
       rating: RatingInput
       review: ReviewInput
@@ -137,42 +136,25 @@ export const resolvers = {
     watched: (parent, { id }, { models }) => getWatchedById(id),
   },
   Mutation: {
-    addWatched: isAuthenticated.createResolver(async (parent, { tmdbId, mediaType, tvData, rating, review, createdAt }, { user }) => {
+    addWatched: isAuthenticated.createResolver(async (parent, { itemId, mediaType, tvData, rating, review, createdAt }, { user }) => {
       const userId = user.id;
       rating = rating ? {
         ...rating,
         userId,
-        tvData,
-        tmdbId,
       } : null;
 
       review = review ? {
         ...review,
         userId,
-        tvData,
-        tmdbId,
       } : null;
 
-      const fetchTarget = mediaType === 'movie' ? getMovieByTmdbId : getTvByTmdbId;
-      const [item, response] = await Promise.all([
-        fetchTarget(tmdbId) as any,
-        tmdbService.get(`${mediaType}/${tmdbId}`),
-      ]);
-      const { id, ...tmdbItem } = response.data;
-      const idData = item ? { id: item.id } : {};
       return createWatchedGraph({
         userId,
-        tmdbId,
         tvData,
         rating,
         review,
         createdAt,
         itemType: mediaType.slice(0, 1).toUpperCase() + mediaType.slice(1),
-        [mediaType]: {
-          ...tmdbItem,
-          ...idData,
-          tmdbId: id,
-        },
       });
     }),
   },

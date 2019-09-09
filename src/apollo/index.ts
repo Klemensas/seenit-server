@@ -4,8 +4,10 @@ import { mergeDeep } from 'apollo-utilities';
 
 import { typeDefs as watchedTypeDefs, resolvers as watchedResolvers } from '../models/watched';
 import { typeDefs as userTypeDefs, resolvers as userResolvers } from '../models/user';
-import { typeDefs as movieTypeDefs } from '../models/movie';
+import { typeDefs as movieTypeDefs, resolvers as movieResolvers } from '../models/movie';
 import { typeDefs as tvTypeDefs, resolvers as tvResolvers } from '../models/tv';
+import { typeDefs as seasonTypeDefs, resolvers as seasonResolvers } from '../models/season';
+import { typeDefs as episodeTypeDefs, resolvers as episodeResolvers } from '../models/episode';
 import { typeDefs as ratingTypeDefs } from '../models/rating';
 import { typeDefs as reviewTypeDefs } from '../models/review';
 import { Auth } from '../auth/auth';
@@ -19,6 +21,8 @@ export function initializeApolloServer(app: express.Express) {
       baseType,
       movieTypeDefs,
       tvTypeDefs,
+      seasonTypeDefs,
+      episodeTypeDefs,
       watchedTypeDefs,
       userTypeDefs,
       serviceTypeDefs,
@@ -26,7 +30,15 @@ export function initializeApolloServer(app: express.Express) {
       reviewTypeDefs,
     ],
     // TODO: mergeDeep is apollo internal method, investigate use of array. Alternative solution is using makeExecutableSchema
-    resolvers: mergeDeep(watchedResolvers, userResolvers, serviceResolvers, tvResolvers),
+    resolvers: mergeDeep(
+      watchedResolvers,
+      userResolvers,
+      serviceResolvers,
+      movieResolvers,
+      tvResolvers,
+      seasonResolvers,
+      episodeResolvers,
+    ),
     context: async ({ req, res }) => {
       if (req) {
         if (req.headers.authorization) {

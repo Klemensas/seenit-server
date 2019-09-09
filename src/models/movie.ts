@@ -4,6 +4,7 @@ import { gql } from 'apollo-server-express';
 import { knex } from '../config';
 import { BaseModel } from './baseModel';
 import { Watched, ItemTypes } from './watched';
+import { getMovieById } from '../queries/movieQueries';
 
 export interface Genre {
   id: number;
@@ -144,6 +145,7 @@ export const typeDefs = gql`
     vote_average: Float
     vote_count: Int
     tmdbId: Int
+    watched: [Watched]
   }
 
   type Genre {
@@ -174,4 +176,14 @@ export const typeDefs = gql`
     iso_639_1: String
     name: String
   }
+
+  extend type Query {
+    movie(id: ID): Movie
+  }
 `;
+
+export const resolvers = {
+  Query: {
+    movie: (parent, { id }, { models }) => getMovieById(id),
+  },
+};

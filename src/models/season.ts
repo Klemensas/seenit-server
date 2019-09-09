@@ -1,6 +1,10 @@
+import { gql, UserInputError } from 'apollo-server-core';
+
 import { BaseModel } from './baseModel';
 import { Tv } from './tv';
 import { Episode } from './episode';
+import { getSeasonById } from '../queries/seasonQueries';
+import { getEpisodesBySeasonId } from '../queries/episodeQueries';
 
 // tslint:disable: variable-name
 export class Season extends BaseModel {
@@ -44,3 +48,40 @@ export class Season extends BaseModel {
     properties: {},
   };
 }
+
+export const typeDefs = gql`
+  type Season {
+    id: ID!
+    name: String
+    overview: String
+    air_date: String
+    episode_count: Int
+    poster_path: String
+    season_number: Int
+    tmdbId: Int
+    tvId: ID
+    tv: Tv
+    episodes: [Episode]
+  }
+
+  extend type Query {
+    season(id: ID): Season
+  }
+`;
+
+export const resolvers = {
+  Query: {
+    season: (parent, { id }, { models }) => {
+      try {
+        const season = getSeasonById(id);
+
+        return season;
+      } catch (err) {
+        throw new UserInputError(err.message);
+      }
+    },
+  },
+  Season: {
+    episodes: (season: Season, args, { loaders }) => getEpisodesBySeasonId(season.id),
+  },
+};
