@@ -1,57 +1,148 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
 import { knex } from '../config';
-import TMDB, { MediaType } from '../services/TMDB';
+import TMDB, { MediaType, TV, Movie as TmdbMovie, TmdbSeason, TmdbEpisode } from '../services/TMDB';
 import { Movie } from '../models/movie';
 import { Tv } from '../models/tv';
 import { DailyExports } from './dailyExport';
 import { DailyChanges } from '../models/dailyChanges';
+import { Season } from '../models/season';
+import { Episode } from '../models/episode';
 
-const exportDate = '2019-06-28';
+const exportDate = '2019-08-30';
 
 export enum ExportPaths {
   'movie' = '/movie/changes',
   'tv' = '/tv/changes',
 }
 
-export async function getRangeChanges(type: MediaType, from: Date, to: Date = new Date()) {
-  const path = ExportPaths[type];
+export async function loadEpisodeData() {
+  const items = await Tv.query(knex);
+
+  const group = [];
+  let target;
+  let item;
+
+  while (items.length) {
+    target = items.shift();
+    item = await DailyExports.fetchItemWithDeletion(target.tmdbId, 'tv')
+    const { data, remainingLimit, nextBatch } = item;
+
+    if (data) {
+      const { id, ...newData } = data;
+      group.push({ ...target, ...newData });
+    }
+
+    if (!remainingLimit) {
+      await new Promise((resolve) => setTimeout(resolve, (nextBatch - Math.floor(Date.now() / 1000)) * 1000 + 1000));
+    }
+  }
+
+  await Tv.query(knex).upsertGraph(group, { noDelete: true });
+}
+
+export async function getRangeChanges(type: MediaType, from: Date, to: Date = new Date(), batch: number) {
+  const route = ExportPaths[type];
   const fromString = [from.getUTCFullYear(), String(from.getUTCMonth() + 1).padStart(2, '0'), String(from.getUTCDate()).padStart(2, '0')].join('-');
   const toString = [to.getUTCFullYear(), String(to.getUTCMonth() + 1).padStart(2, '0'), String(to.getUTCDate()).padStart(2, '0')].join('-');
 
-  const changes = await getPage(path, fromString, toString);
+  const changes = await getPage(route, fromString, toString);
   const changedIds = changes.filter(({ adult }) => !adult).map(({ id }) => id);
-  const model: any = type === 'movie' ? Movie : Tv;
+  const query = type === 'movie' ? Movie.query() : Tv.query().eager('[seasons.episodes]');
 
-  const [{ items, deletedIds }, currentItems] = await Promise.all([
-    loadItems(changedIds, type),
-    model.query(knex).whereIn('tmdbId', changedIds),
+  const [data, currentItems] = await Promise.all([
+    loadItemsSync(changedIds, type),
+    query.whereIn('tmdbId', changedIds),
   ]);
 
-  let updated = 0;
+  const newItems = await (type === 'movie' ? updateMovieItems(currentItems as Movie[], data) : updateTvItems(currentItems, data));
+  await DailyChanges.query().insertGraph(data.deletedIds.map((tmdbId) => ({
+    type,
+    tmdbId,
+    batch,
+    changes: {
+      old: currentItems.find(({ tmdbId: existingTmdbId }) => existingTmdbId === tmdbId),
+      new: null,
+    }
+  })));
+  await DailyChanges.query().insertGraph(newItems.map((item) => ({
+    type,
+    tmdbId: item.tmdbId,
+    batch,
+    changes: {
+      old: currentItems.find(({ tmdbId: existingTmdbId }) => existingTmdbId === item.tmdbId),
+      new: item,
+    },
+  })));
+}
+
+async function updateMovieItems(items: Movie[], updates: { items: TmdbMovie[], deletedIds: number[] }, connection = knex) {
+  const formattedItems = updates.items.map(({ id, ...item }) => ({
+    ...items.find(({ tmdbId }) => tmdbId === id),
+    ...item,
+    tmdbId: id,
+  }));
+
   await Promise.all([
-    model.query(knex).upsertGraph(items.map(({ id, ...item}) => {
-      const storedItem = currentItems.find(({ tmdbId }) => tmdbId === id);
-      const newItem = {
-        ...item,
-        tmdbId: id,
-      };
-
-      if (storedItem) {
-        newItem.id = storedItem.id;
-        updated++;
-      }
-
-      return newItem;
-    }), {
+    Movie.query(connection).upsertGraph(formattedItems, {
       noDelete: true,
     }),
-    model.query(knex).whereIn('tmdbId', deletedIds).del(),
+    Movie.query(connection).whereIn('tmdbId', updates.deletedIds).del(),
   ]);
 
-  return {
-    updated,
-    inserted: items.length - updated,
-    deleted: deletedIds.length,
-  };
+  return formattedItems;
+}
+
+async function updateTvItems(items: Tv[], updates: { items: TV[], deletedIds: number[] }, connection = knex) {
+  const formattedItems = formatTvItems(items, updates.items);
+  await Promise.all([
+    Tv.query(connection).upsertGraph(formattedItems),
+    Tv.query(connection).whereIn('tmdbId', updates.deletedIds).del(),
+  ]);
+
+  return formattedItems;
+}
+
+export function formatTvItems(items: Tv[], changes: TV[]) {
+  return changes.map(({ id, ...item }) => {
+    const storedItem = items.find(({ tmdbId }) => tmdbId === id);
+    const newItem: any = {
+      ...storedItem,
+      ...item,
+      tmdbId: id,
+      seasons: formatTvSeasons(item.seasons, storedItem ? storedItem.seasons : []),
+    };
+
+    return newItem;
+  });
+}
+
+export function formatTvSeasons(seasonData: TmdbSeason[], currentData: Season[]) {
+  return seasonData.map(({ id: tmdbId, _id, episodes, air_date, ...season }: any) => {
+    const storedSeason = currentData.find(({ tmdbId: existingTmdbId }) => existingTmdbId === tmdbId);
+
+    return {
+      ...storedSeason,
+      tmdbId,
+      air_date: +new Date(air_date) || null,
+      episodes: episodes ? formatTvEpisodes(episodes, storedSeason ? storedSeason.episodes : []) : [],
+      ...season,
+    };
+  });
+}
+
+export function formatTvEpisodes(episodeData: TmdbEpisode[], currentData: Episode[]) {
+  return episodeData.map(({ id: tmdbId, air_date, show_id, season_number, ...episode }) => {
+    const storedEpisode = currentData.find(({ tmdbId: existingTmdbId }) => existingTmdbId === tmdbId);
+
+    return {
+      ...storedEpisode,
+      tmdbId,
+      air_date: +new Date(air_date) || null,
+      ...episode,
+    };
+  });
 }
 
 async function getPage(path: ExportPaths, from: string, to: string, page: number = 1) {
@@ -70,81 +161,46 @@ async function getPage(path: ExportPaths, from: string, to: string, page: number
   return data.results.concat(items);
 }
 
-async function loadItems(ids: number[], type: MediaType) {
+async function loadItemsSync(ids: number[], type: MediaType) {
   const list = [...ids];
   const deletedIds = [];
   const items = [];
-  const { data, id, limit, remainingLimit } = await DailyExports.fetchItemWithDeletion(list.shift(), type);
-  if (data) {
-    items.push(data);
-  } else {
-    deletedIds.push(id);
-  }
-  let currentLimit = remainingLimit;
 
-  let request = [];
   while (list.length) {
-    if (currentLimit) {
-      currentLimit--;
-      request.push(DailyExports.fetchItemWithDeletion(list.shift(), type));
-      continue;
+    const { data, id, remainingLimit, nextBatch } = await DailyExports.fetchItemWithDeletion(list.shift(), type);
+    if (data) {
+      items.push(data);
+    } else {
+      deletedIds.push(id);
     }
 
-    const responses = await Promise.all(request);
-    responses.forEach(({ data, id }) => {
-      if (!data) {
-        deletedIds.push(id);
-        return;
-      }
-      items.push(data)
-    });
-
-    const lastItem = DailyExports.lastBatchItem(responses);
-    request = [];
-
-    if (lastItem.remainingLimit) {
-      currentLimit = lastItem.remainingLimit;
-      continue;
+    if (!remainingLimit) {
+      await new Promise((resolve) => setTimeout(resolve, (nextBatch - Math.floor(Date.now() / 1000)) * 1000 + 1000));
     }
-
-    await new Promise((resolve) => setTimeout(resolve, (lastItem.nextBatch - Math.floor(Date.now() / 1000)) * 1000 + 1000));
-    currentLimit = limit;
   }
+
   return { items, deletedIds };
 }
 
 export async function storeChanges() {
-  const lastChanges = await DailyChanges.query(knex).orderBy('createdAt', 'desc').limit(1).first().debug();
+  const lastChanges = await DailyChanges.query(knex).orderBy('createdAt', 'desc').limit(1).first();
 
-  const lastDate = lastChanges ? +lastChanges.createdAt : exportDate;
+  const lastDate = lastChanges ? +lastChanges.createdAt : +exportDate;
+  const batch = lastChanges ? lastChanges.batch++ : 0;
   const date = new Date(lastDate);
-  const endDate = new Date(+date + 86400000);
+  const endDate = new Date();
 
-  if (+endDate + 72000000 > Date.now()) {
-    console.log(`You're all good, less than 20h passed since last change update`);
+  if (date.getDate() === endDate.getDate() && date.getMonth() === endDate.getMonth() && date.getFullYear() === endDate.getFullYear()) {
+    console.log(`You're all good with todays changes`);
     return null;
   }
 
   console.time('Changes');
-  const movieChanges = await getRangeChanges('movie', date, endDate);
-  const tvChanges = await getRangeChanges('tv', date, endDate);
-
-  console.time('Change insertion');
-  const insertedItems = await DailyChanges.query(knex).insert([{
-    type: 'movie',
-    ...movieChanges,
-    createdAt: +endDate,
-    updatedAt: +endDate,
-  }, {
-    type: 'tv',
-    ...tvChanges,
-    createdAt: +endDate,
-    updatedAt: +endDate,
-  }]);
-  console.timeEnd('Change insertion');
+  await getRangeChanges('movie', date, endDate, batch);
+  await getRangeChanges('tv', date, endDate, batch);
   console.timeEnd('Changes');
 
-  return insertedItems;
+  return true;
 }
 
 function storeAllChanges() {
@@ -155,7 +211,8 @@ console.log('store start');
 storeAllChanges().then(() => {
   console.log('stored');
   process.exit(0);
-}).catch((a) => {
-  console.error('errored!', a);
+}).catch((err) => {
+  const stream = fs.createWriteStream(path.resolve(__dirname, 'errors.log'), { flags: 'a' });
+  stream.write(`Changes bailed - ${err.toString()}\n`);
   process.exit(1)
 });
