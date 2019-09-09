@@ -3,24 +3,24 @@ import { gql } from 'apollo-server-express';
 import { BaseModel } from './baseModel';
 import { User } from './user';
 import { Watched, ItemTypes } from './watched';
-import { TvData, Tv } from './tv';
+import { Tv } from './tv';
 import { Movie } from './movie';
+import { Season } from './season';
+import { Episode } from './episode';
 
 export class Review extends BaseModel {
-  readonly id: number;
+  readonly id: string;
   body: string;
-  tmdbId: number;
 
-  userId?: number;
+  userId?: string;
   user?: User;
 
-  watchedId?: number;
+  watchedId?: string;
   watched?: Watched;
 
   itemType: ItemTypes;
-  itemId: number;
-  item?: Movie | Tv;
-  tvData?: TvData;
+  itemId: string;
+  item?: Movie | Tv | Season | Episode;
 
   static tableName = 'Review';
 

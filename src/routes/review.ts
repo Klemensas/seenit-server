@@ -13,7 +13,6 @@ export class ReviewRouter extends BaseRouter {
   public async post(req: Request, res: Response, next: NextFunction) {
     try {
       const review = await reviewQueries.create({
-        tmdbId: req.body.tmdbId,
         userId: req.user.id,
         body: req.body.body,
       });

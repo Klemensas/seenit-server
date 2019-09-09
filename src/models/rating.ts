@@ -5,26 +5,26 @@ import { User } from './user';
 import { Watched, ItemTypes } from './watched';
 import { Movie } from './movie';
 import { Tv, TvData } from './tv';
+import { Season } from './season';
+import { Episode } from './episode';
 
 // TODO: validation and better definitino for max val
 export const maxRatingValue = 5;
 
 export class Rating extends BaseModel {
-  readonly id: number;
+  readonly id: string;
   value: number;
   symbol: string;
-  tmdbId: number;
 
-  userId?: number;
+  userId?: string;
   user?: User;
 
-  watchedId?: number;
+  watchedId?: string;
   watched?: Watched;
 
   itemType: ItemTypes;
-  itemId: number;
-  item?: Movie | Tv;
-  tvData?: TvData;
+  itemId: string;
+  item?: Movie | Tv | Season | Episode;
 
   static tableName = 'Rating';
 

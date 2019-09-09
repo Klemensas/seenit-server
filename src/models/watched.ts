@@ -17,17 +17,19 @@ import { getTvById, getTvByTmdbId } from '../queries/tvQueries';
 export const enum ItemTypes {
   'Movie' = 'Movie',
   'Tv' = 'Tv',
+  'Season' = 'Season',
+  'Episode' = 'Episode',
 }
 
 export class Watched extends BaseModel {
-  readonly id: number;
+  readonly id: string;
   tmdbId: number;
 
-  userId?: number;
+  userId?: string;
   user?: User;
 
   itemType: ItemTypes;
-  itemId: number;
+  itemId: string;
   item?: Movie | Tv;
   tvData?: TvData;
 

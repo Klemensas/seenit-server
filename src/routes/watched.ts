@@ -15,22 +15,18 @@ export class WatchedRouter extends BaseRouter {
   public async post(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user.id;
-      const tmdbId = req.body.tmdbId;
       const rating: Partial<Rating> = req.body.rating ? {
         userId,
-        tmdbId,
         value: req.body.rating.value,
         symbol: req.body.symbol,
       } : null;
       const review: Partial<Review> = req.body.review ? {
         userId,
-        tmdbId,
         body: req.body.review.body,
       } : null;
 
       const watched = await watchedQueries.createWatchedGraph({
         userId,
-        tmdbId,
         rating,
         review,
       });

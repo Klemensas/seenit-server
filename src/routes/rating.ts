@@ -13,7 +13,6 @@ export class RatingRouter extends BaseRouter {
   public async post(req: Request, res: Response, next: NextFunction) {
     try {
       const rating = await ratingQueries.create({
-        tmdbId: req.body.tmdbId,
         userId: req.user.id,
         value: req.body.value,
         symbol: req.body.symbol,
