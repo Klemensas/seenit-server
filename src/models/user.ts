@@ -9,7 +9,7 @@ import { Auth } from '../auth/auth';
 import { isAuthenticated } from '../apollo/resolvers';
 
 export class User extends BaseModel {
-  readonly id: number;
+  readonly id: string;
   name: string;
   email: string;
   password: string;

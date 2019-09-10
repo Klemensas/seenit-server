@@ -28,7 +28,6 @@ export default (knex: Knex, users: User[], itemList: any[], iterationsPerUser = 
             itemType: targetItem.constructor.name,
             tmdbId: targetItem.tmdbId,
             userId: id,
-            tvData,
           } as Watched);
         }
         return items;

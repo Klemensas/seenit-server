@@ -52,11 +52,12 @@ export async function getRangeChanges(type: MediaType, from: Date, to: Date = ne
   const query = type === 'movie' ? Movie.query() : Tv.query().eager('[seasons.episodes]');
 
   const [data, currentItems] = await Promise.all([
-    loadItemsSync(changedIds, type),
+    loadItemsSync(changedIds, type) as any,
     query.whereIn('tmdbId', changedIds),
   ]);
 
   const newItems = await (type === 'movie' ? updateMovieItems(currentItems as Movie[], data) : updateTvItems(currentItems, data));
+
   await DailyChanges.query().insertGraph(data.deletedIds.map((tmdbId) => ({
     type,
     tmdbId,
@@ -64,8 +65,9 @@ export async function getRangeChanges(type: MediaType, from: Date, to: Date = ne
     changes: {
       old: currentItems.find(({ tmdbId: existingTmdbId }) => existingTmdbId === tmdbId),
       new: null,
-    }
+    },
   })));
+
   await DailyChanges.query().insertGraph(newItems.map((item) => ({
     type,
     tmdbId: item.tmdbId,
