@@ -116,14 +116,14 @@ export class Tv extends BaseModel {
   async $beforeInsert(queryContext: QueryContext) {
     await super.$beforeInsert(queryContext);
 
-    this.titleVector = knex.raw(`to_tsvector('${this.name}')`) as any;
+    this.titleVector = knex.raw(`to_tsvector('?')`, [this.name]) as any;
   }
 
   async $beforeUpdate(opt: ModelOptions, queryContext: QueryContext) {
     await super.$beforeUpdate(opt, queryContext);
 
     if (this.name) {
-      this.titleVector = knex.raw(`to_tsvector('${this.name}')`) as any;
+      this.titleVector = knex.raw(`to_tsvector('?')`, [this.name]) as any;
     }
   }
 }

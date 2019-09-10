@@ -105,14 +105,14 @@ export class Movie extends BaseModel {
   async $beforeInsert(queryContext: QueryContext) {
     await super.$beforeInsert(queryContext);
 
-    this.titleVector = knex.raw(`to_tsvector('${this.title}')`) as any;
+    this.titleVector = knex.raw(`to_tsvector('?')`, [this.title]) as any;
   }
 
   async $beforeUpdate(opt: ModelOptions, queryContext: QueryContext) {
     await super.$beforeUpdate(opt, queryContext);
 
     if (this.title) {
-      this.titleVector = knex.raw(`to_tsvector('${this.title}')`) as any;
+      this.titleVector = knex.raw(`to_tsvector('?')`, [this.title]) as any;
     }
   }
 }
