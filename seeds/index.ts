@@ -4,8 +4,6 @@ import userSeed from './user';
 import movieSeed from './movie';
 import tvSeed from './tv';
 import watchedSeed from './watched';
-import reviewSeed from './review';
-import ratingSeed from './rating';
 
 /* tslint:disable:no-console */
 (async () => {
@@ -23,10 +21,10 @@ import ratingSeed from './rating';
       acc[id] = watched.filter(({ userId }) => userId === id);
       return acc;
     }, {})
-    await Promise.all([
-      reviewSeed(knex, users, userWatched, itemList),
-      ratingSeed(knex, users, userWatched, itemList),
-    ]);
+    // await Promise.all([
+    //   reviewSeed(knex, users, userWatched, itemList),
+    //   ratingSeed(knex, users, userWatched, itemList),
+    // ]);
 
     console.timeEnd('seed');
     console.log('seeding completed successfully');
