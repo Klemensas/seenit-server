@@ -57,6 +57,7 @@ export async function getRangeChanges(type: MediaType, from: Date, to: Date = ne
     query.whereIn('tmdbId', changedIds),
   ]);
 
+  console.log('yep update', data.items.length, data.deletedIds.length)
   const newItems = await (type === 'movie' ? updateMovieItems(currentItems as Movie[], data) : updateTvItems(currentItems, data));
 
   await DailyChanges.query().insertGraph(data.deletedIds.map((tmdbId) => ({
@@ -100,7 +101,9 @@ async function updateMovieItems(items: Movie[], updates: { items: TmdbMovie[], d
 async function updateTvItems(items: Tv[], updates: { items: TV[], deletedIds: number[] }, connection = knex) {
   const formattedItems = formatTvItems(items, updates.items);
   await Promise.all([
-    Tv.query(connection).upsertGraph(formattedItems),
+    Tv.query(connection).upsertGraph(formattedItems, {
+      noDelete: true,
+    }),
     Tv.query(connection).whereIn('tmdbId', updates.deletedIds).del(),
   ]);
 
