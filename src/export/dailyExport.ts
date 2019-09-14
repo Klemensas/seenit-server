@@ -237,7 +237,7 @@ export class DailyExports {
     };
   }
 
-  static async fetchItemWithDeletion(id: number, type: MediaType) {
+  static async fetchItemWithDeletion(id: number, type: MediaType, attempt = 1) {
     try {
       const result = await this.fetchItem(id, type);
       return result;
@@ -253,6 +253,13 @@ export class DailyExports {
             id,
             ...limits,
           };
+        }
+
+        if (err.response.status === 504) {
+          const stream = fs.createWriteStream(path.resolve(__dirname, 'errors.log'), { flags: 'a' });
+          stream.write(`Got timeout for - ${id}, attempt #${attempt}\n`);
+
+          return this.fetchItemWithDeletion(id, type, attempt + 1);
         }
 
         if (err.response.status === 429) {
