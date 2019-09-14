@@ -49,6 +49,7 @@ export async function getRangeChanges(type: MediaType, from: Date, to: Date = ne
 
   const changes = await getPage(route, fromString, toString);
   const changedIds = changes.filter(({ adult }) => !adult).map(({ id }) => id);
+  console.log(`Starting loading for ${changedIds.length} ${type} items`)
   const query = type === 'movie' ? Movie.query() : Tv.query().eager('[seasons.episodes]');
 
   const [data, currentItems] = await Promise.all([
