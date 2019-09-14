@@ -190,7 +190,9 @@ export async function storeChanges() {
   const lastDate = lastChanges ? lastChanges.createdAt : exportDate;
   const batch = lastChanges ? lastChanges.batch + 1 : 0;
   const date = new Date(lastDate);
-  const endDate = new Date();
+  const daysFromLastCheck = (Date.now() - +date) / 86400000;
+  const endTime = daysFromLastCheck > 2 ? +date +  172800000 : Date.now()
+  const endDate = new Date(endTime);
 
   if (date.getDate() === endDate.getDate() && date.getMonth() === endDate.getMonth() && date.getFullYear() === endDate.getFullYear()) {
     console.log(`You're all good with todays changes`);
