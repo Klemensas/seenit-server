@@ -188,7 +188,7 @@ export async function storeChanges() {
   const lastChanges = await DailyChanges.query(knex).orderBy('createdAt', 'desc').limit(1).first();
 
   const lastDate = lastChanges ? +lastChanges.createdAt : +exportDate;
-  const batch = lastChanges ? lastChanges.batch++ : 0;
+  const batch = lastChanges ? lastChanges.batch + 1 : 0;
   const date = new Date(lastDate);
   const endDate = new Date();
 
