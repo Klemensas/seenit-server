@@ -214,7 +214,8 @@ storeAllChanges().then(() => {
   console.log('stored');
   process.exit(0);
 }).catch((err) => {
+  console.log('uh oh', err.toString())
   const stream = fs.createWriteStream(path.resolve(__dirname, 'errors.log'), { flags: 'a' });
   stream.write(`Changes bailed - ${err.toString()}\n`);
-  process.exit(1)
+  throw err;
 });
