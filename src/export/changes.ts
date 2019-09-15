@@ -1,6 +1,3 @@
-import * as fs from 'fs';
-import * as path from 'path';
-
 import { knex } from '../config';
 import TMDB, { MediaType, TV, Movie as TmdbMovie, TmdbSeason, TmdbEpisode } from '../services/TMDB';
 import { Movie } from '../models/movie';
@@ -9,6 +6,7 @@ import { DailyExports } from './dailyExport';
 import { DailyChanges } from '../models/dailyChanges';
 import { Season } from '../models/season';
 import { Episode } from '../models/episode';
+import { logError } from '../errors/log';
 
 const exportDate = '2019-08-30';
 
@@ -221,8 +219,7 @@ storeAllChanges().then(() => {
   process.exit(0);
 }).catch((err) => {
   console.log('uh oh')
-  console.log(err.toString())
-  const stream = fs.createWriteStream(path.resolve(__dirname, 'errors.log'), { flags: 'a' });
-  stream.write(`Changes bailed - ${err.toString()}\n`);
-  throw err;
+  logError(`Changes bailed - ${err.toString()}`, () => {
+    process.exit(1);
+  })
 });

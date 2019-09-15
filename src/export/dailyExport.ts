@@ -9,6 +9,7 @@ import { Movie } from '../models/movie';
 import { Tv } from '../models/tv';
 import TMDB, { MediaType } from '../services/TMDB';
 import { formatTvItems } from './changes';
+import { logError } from '../errors/log';
 
 export enum ExportPaths {
   'movie' = 'http://files.tmdb.org/p/exports/movie_ids_',
@@ -148,8 +149,7 @@ export class DailyExports {
         reader.resume();
         return;
       } catch (err) {
-        const stream = fs.createWriteStream(path.resolve(__dirname, 'errors.log'), { flags: 'a' });
-        stream.write(`${err.toString()}-${err.response ? JSON.stringify(err.response.headers) : ''}-${remainingRequests}\n`, (error) => {
+        logError(`${err.toString()}-${err.response ? JSON.stringify(err.response.headers) : ''}-${remainingRequests}`, (error) => {
           process.exit(1);
         });
       }
@@ -245,8 +245,7 @@ export class DailyExports {
       if (err && err.response) {
         const limits = TMDB.extractLimits(err.response.headers);
         if (err.response.status === 404) {
-          const stream = fs.createWriteStream(path.resolve(__dirname, 'errors.log'), { flags: 'a' });
-          stream.write(`No item - ${id}\n`);
+          logError(`No item - ${id}`);
 
           return {
             data: null,
@@ -256,16 +255,14 @@ export class DailyExports {
         }
 
         if (err.response.status === 504) {
-          const stream = fs.createWriteStream(path.resolve(__dirname, 'errors.log'), { flags: 'a' });
-          stream.write(`Got timeout for - ${id}, attempt #${attempt}\n`);
+          logError(`Got timeout for - ${id}, attempt #${attempt}`);
 
           return this.fetchItemWithDeletion(id, type, attempt + 1);
         }
 
         if (err.response.status === 429) {
           const retryAfter = +err.response.headers['retry-after'];
-          const stream = fs.createWriteStream(path.resolve(__dirname, 'errors.log'), { flags: 'a' });
-          stream.write(`Trying to recover - ${id} -- ${err.toString()}\n`);
+          logError(`Trying to recover - ${id} -- ${err.toString()}`);
           await new Promise((resolve) => setTimeout(() => resolve(), retryAfter * 1000));
           return this.fetchItem(id, type);
         }
