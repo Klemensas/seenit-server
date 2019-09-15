@@ -63,24 +63,19 @@ export async function getRangeChanges(type: MediaType, from: Date, to: Date = ne
     tmdbId,
     batch,
     changes: {
-      old: currentItems.find(({ tmdbId: existingTmdbId }) => existingTmdbId === tmdbId),
+      old: currentItems.some(({ tmdbId: existingTmdbId }) => existingTmdbId === tmdbId),
       new: null,
     },
   })));
 
   console.log('final moment')
-  if (type === 'tv') {
-    console.log('attempting write of items')
-    await new Promise(resolve => logError(JSON.stringify(newItems), () => resolve()));
-    console.log('stored!')
-  }
   await DailyChanges.query().insertGraph(newItems.map((item) => ({
     type,
     tmdbId: item.tmdbId,
     batch,
     changes: {
-      old: currentItems.find(({ tmdbId: existingTmdbId }) => existingTmdbId === item.tmdbId),
-      new: item,
+      old: currentItems.some(({ tmdbId: existingTmdbId }) => existingTmdbId === item.tmdbId),
+      new: true,
     },
   })));
   console.log('rip in pieces')
