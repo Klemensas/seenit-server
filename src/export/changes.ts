@@ -66,6 +66,7 @@ export async function getRangeChanges(type: MediaType, from: Date, to: Date = ne
       old: currentItems.some(({ tmdbId: existingTmdbId }) => existingTmdbId === tmdbId),
       new: null,
     },
+    createdAt: +to,
   })));
 
   console.log('final moment')
@@ -77,6 +78,7 @@ export async function getRangeChanges(type: MediaType, from: Date, to: Date = ne
       old: currentItems.some(({ tmdbId: existingTmdbId }) => existingTmdbId === item.tmdbId),
       new: true,
     },
+    createdAt: +to,
   })));
   console.log('rip in pieces')
 }
