@@ -219,7 +219,10 @@ function storeAllChanges() {
 console.log('store start');
 storeAllChanges().then(() => {
   console.log('stored');
-  process.exit(0);
+  setTimeout(() => {
+    console.log('delayed exit');
+    process.exit(0);
+  }, 1000)
 }).catch((err) => {
   console.log('uh oh')
   logError(`Changes bailed - ${err.toString()}`, () => {
