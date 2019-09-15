@@ -69,6 +69,11 @@ export async function getRangeChanges(type: MediaType, from: Date, to: Date = ne
   })));
 
   console.log('final moment')
+  if (type === 'tv') {
+    console.log('attempting write of items')
+    await new Promise(resolve => logError(JSON.stringify(newItems), () => resolve()));
+    console.log('stored!')
+  }
   await DailyChanges.query().insertGraph(newItems.map((item) => ({
     type,
     tmdbId: item.tmdbId,
