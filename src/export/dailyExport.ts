@@ -268,6 +268,7 @@ export class DailyExports {
         }
       }
 
+      logError(`Unforseen error - ${id}, type ${type}`);
       throw err;
     }
   }
