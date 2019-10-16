@@ -1,5 +1,7 @@
 import * as express from 'express';
 import * as http from 'http';
+import * as https from 'https';
+import * as fs from 'fs';
 import * as compression from 'compression';
 import * as bodyParser from 'body-parser';
 import * as passport from 'passport';
@@ -17,10 +19,23 @@ import { initializeApolloServer } from './apollo';
 
 dotenv.config();
 
+function setupHttp(app: express.Express) {
+  return http.createServer(app).listen(config.port);
+}
+
+function setupHttps(app: express.Express) {
+  const options = {
+    key: fs.readFileSync(config.tls.keyPath),
+    cert: fs.readFileSync(config.tls.certPath)
+  };
+
+  return https.createServer(options, app).listen(config.port);
+}
+
 export class Server {
   public static app: express.Express;
   public static apolloServer: ApolloServer;
-  public static async initializeApp(): Promise<http.Server> {
+  public static async initializeApp(): Promise<http.Server | https.Server> {
     try {
       Server.app = express();
       Server.configureApp();
@@ -33,7 +48,8 @@ export class Server {
         logger.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
       });
 
-      return Server.app.listen(config.port);
+      const setupServer = config.tls.certPath ? setupHttps : setupHttp;
+      return setupServer(Server.app);
     } catch (error) {
       throw new InternalServerError(error.message);
     }

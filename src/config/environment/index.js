@@ -7,6 +7,10 @@ module.exports = {
   ip: process.env.IP || '0.0.0.0',
   port: process.env.PORT || 9000,
   exportPort: process.env.EXPORT_PORT || 9001,
+  tls: {
+    certPath: process.env.TLS_CERT_PATH || null,
+    keyPath: process.env.TLS_KEY_PATH || null,
+  },
   root: path.normalize(path.join(__dirname, '/../../..')),
   secrets: {
     session: process.env.APP_SECRET || 'secret',
