@@ -8,6 +8,7 @@ import { Genre, Company } from './movie';
 import { getTvById } from '../queries/tvQueries';
 import { Season } from './season';
 import { Episode } from './episode';
+import { getSeasonsByTvId } from '../queries/seasonQueries';
 
 export interface TvData {
   episode: number;
@@ -203,16 +204,7 @@ export const resolvers = {
   },
   Tv: {
     seasons: async (tv: Tv, args, { loaders }) => {
-      try {
-        const s = await Episode.query().whereIn('tvId', [tv.id]).debug();
-        // const s = await Season.query().whereRaw(`"id::text" = ('?')`, [`'2b0dd1b3-6745-4b3f-9bfc-765f4fe0f907'`]).debug();
-        // const s = await getSeasonsByTvId(tv.id).debug()
-        console.log('wooo', tv.id, s.length)
-        return s;
-      } catch (err) {
-        console.log('eee', err);
-        throw err;
-      }
+      return getSeasonsByTvId(tv.id);
     },
   }
 };
