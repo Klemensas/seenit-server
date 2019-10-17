@@ -13,6 +13,7 @@ import { typeDefs as reviewTypeDefs } from '../models/review';
 import { Auth } from '../auth/auth';
 import { baseType, serviceTypeDefs } from './typeDefs';
 import { serviceResolvers } from './resolvers';
+import { config } from '../config';
 
 export function initializeApolloServer(app: express.Express) {
   const apolloServer = new ApolloServer({
@@ -52,6 +53,7 @@ export function initializeApolloServer(app: express.Express) {
         }
       }
     },
+    tracing: config.env !== 'production',
   });
 
   apolloServer.applyMiddleware({ app });
