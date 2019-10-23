@@ -15,7 +15,7 @@ export const serviceResolvers = {
     searchContent: isAuthenticated.createResolver((parent, { title }, { models }) => {
       if (!title) { return []; }
 
-      const formattedTitle = title.slice(0, 100).trim().replace(' ', ' <-> ') + ':*';
+      const formattedTitle = title.slice(0, 100).trim().replace(/\s/g, ' <-> ') + ':*';
       // TODO: improve typing here
       return Movie.query()
         .select(
