@@ -27,7 +27,7 @@
     "express": "^4.16.3",
     "express-limiter": "^1.6.1",
     "graphql": "^14.3.0",
-    "jest": "^24.8.0",
+    "jest": "^24.9.0",
     "jsonwebtoken": "^8.3.0",
     "knex": "^0.19.5",
     "line-by-line": "^0.1.6",
