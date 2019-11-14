@@ -20,7 +20,7 @@
     "bunyan": "^1.8.12",
     "compression": "^1.7.3",
     "cross-spawn": "^6.0.5",
-    "db-errors": "^0.2.2",
+    "db-errors": "^0.2.3",
     "debug": "^4.1.1",
     "dotenv": "^8.0.0",
     "errorhandler": "^1.5.0",
