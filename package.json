@@ -19,7 +19,7 @@
     "body-parser": "^1.18.3",
     "bunyan": "^1.8.12",
     "compression": "^1.7.3",
-    "cross-spawn": "^6.0.5",
+    "cross-spawn": "^7.0.1",
     "db-errors": "^0.2.3",
     "debug": "^4.1.1",
     "dotenv": "^8.2.0",
