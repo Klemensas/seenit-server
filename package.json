@@ -32,7 +32,7 @@
     "knex": "^0.20.2",
     "line-by-line": "^0.1.6",
     "morgan": "^1.9.0",
-    "objection": "^1.6.11",
+    "objection": "^2.0.3",
     "passport": "^0.4.0",
     "passport-http-bearer": "^1.0.1",
     "passport-local": "^1.0.0",
