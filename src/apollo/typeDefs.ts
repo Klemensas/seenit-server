@@ -14,7 +14,7 @@ type Subscription {
 
 export const serviceTypeDefs = gql`
   extend type Query {
-    searchContent(title: String!): [SearchItem]
+    searchContent(title: String!): [SearchItem!]!
   }
 
   type TmdbMovie {
@@ -85,11 +85,10 @@ export const serviceTypeDefs = gql`
   #   total_results: Int!
   # }
 
-  union TmdbMedia = TmdbMovie | TmdbTv | TmdbPerson
+  union TmdbMedia = TmdbMovie | TmdbTv
 
   enum TmdbMediaType {
-    movie
-    tv
-    person
+    Movie
+    Tv
   }
 `;

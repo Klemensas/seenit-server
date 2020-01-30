@@ -3,7 +3,7 @@ import { QueryContext } from 'objection';
 import { gql, UserInputError, AuthenticationError } from 'apollo-server-express';
 
 import { BaseModel } from './baseModel';
-import { getUsers, getUserById, createUser, getFullUser } from '../queries/userQueries';
+import { getUsers, getUser, createUser, getFullUser } from '../queries/userQueries';
 import { getWatched } from '../queries/watchedQueries';
 import { Auth } from '../auth/auth';
 import { isAuthenticated } from '../apollo/resolvers';
@@ -78,8 +78,8 @@ export class User extends BaseModel {
 export const typeDefs = gql`
   extend type Query {
     users: [User!]
-    user(id: ID!): User
-    me: User
+    user(id: ID, name: String): User!
+    me: User!
   }
 
   extend type Mutation {
@@ -101,7 +101,8 @@ export const typeDefs = gql`
     # salt: String!
     createdAt: Float!
     updatedAt: Float!
-    watched: [Watched!]
+    # watched(cursor: String): [Watched!]
+    watched(cursor: String): WatchedCursor!
   }
   type LocalAuth {
     user: User!
@@ -112,8 +113,8 @@ export const typeDefs = gql`
 export const resolvers = {
   Query: {
     users: isAuthenticated.createResolver((parent, args, { models }) => getUsers({})),
-    user: (parent, { id }, { models }) => {
-      return getUserById(id);
+    user: (parent, { id, name }, { models }) => {
+      return getUser(name ? { name } : { id });
     },
   },
   Mutation: {
@@ -148,6 +149,17 @@ export const resolvers = {
     },
   },
   User: {
-    watched: (user, args, { loaders }) => getWatched({ userId: user.id })
+    watched: async (user, { cursor, filter }, { loaders }) => {
+      const count = 12;
+      cursor = cursor || Date.now();
+
+      const { total, results } = await getWatched({ userId: user.id }, { count, after: cursor });
+
+      const lastItem = results[results.length - 1] as any;
+      const newCursor = lastItem ? lastItem.createdAt : undefined;
+      const hasMore = total > count;
+
+      return { watched: results, hasMore, cursor: newCursor, filter }
+    },
   },
 }

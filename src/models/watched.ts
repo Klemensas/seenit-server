@@ -4,15 +4,17 @@ import { BaseModel } from './baseModel';
 import { User } from './user';
 import { Rating } from './rating';
 import { Review } from './review';
-import { getWatched, getWatchedById, createWatchedGraph } from '../queries/watchedQueries';
-import { getUserById } from '../queries/userQueries';
-import { isAuthenticated } from '../apollo/resolvers';
-import { getRatingByWatched } from '../queries/ratingQueries';
-import { getReviewByWatched } from '../queries/reviewQueries';
 import { Movie } from './movie';
 import { Tv, TvData } from './tv';
-import { getMovieById, getMovieByTmdbId } from '../queries/movieQueries';
-import { getTvById, getTvByTmdbId } from '../queries/tvQueries';
+
+import { getWatched, getWatchedById, createWatchedGraph } from '../queries/watchedQueries';
+import { getUserById } from '../queries/userQueries';
+import { getMovieById } from '../queries/movieQueries';
+import { getRatingByWatched } from '../queries/ratingQueries';
+import { getReviewByWatched } from '../queries/reviewQueries';
+import { getTvById } from '../queries/tvQueries';
+
+import { isAuthenticated } from '../apollo/resolvers';
 
 export const enum ItemTypes {
   'Movie' = 'Movie',
@@ -83,12 +85,12 @@ export class Watched extends BaseModel {
 
   static jsonSchema = {
     type: 'object',
-    required: ['tmdbId', 'userId'],
+    required: ['itemId', 'userId'],
 
     properties: {
-      id: { type: 'integer' },
-      // tmdbId: { type: 'integer' },
-      userId: { type: 'integer' },
+      id: { type: 'string' },
+      itemId: { type: 'string' },
+      userId: { type: 'string' },
     },
   };
 }
@@ -99,6 +101,10 @@ export const typeDefs = gql`
     Tv
   }
 
+  enum WatchedFilter {
+    Reviewed
+  }
+
   union Item = Movie | Tv
 
   type Watched {
@@ -107,17 +113,23 @@ export const typeDefs = gql`
     createdAt: Float!
     updatedAt: Float!
     userId: ID!
-    user: User
+    user: User!
     itemType: ItemType!
-    item: Item
+    item: Item!
     rating: Rating
     review: Review
     tvData: TvData
   }
+  type WatchedCursor {
+    watched: [Watched!]!
+    cursor: String
+    filter: WatchedFilter
+    hasMore: Boolean!
+  }
 
   extend type Query {
     allWatched: [Watched!]
-    watched(id: ID!): Watched
+    watched(id: ID!): Watched!
   }
 
   extend type Mutation {
@@ -132,31 +144,69 @@ export const typeDefs = gql`
   }
 `;
 
+interface AddWatchedPayload {
+  itemId: string;
+  mediaType: ItemTypes;
+  createdAt: number;
+  rating?: Pick<Rating, 'value'>;
+  review?: Pick<Review, 'body'>;
+  tvData?: TvData;
+
+}
+
+const itemLoaders = {
+  [ItemTypes.Tv]: getTvById,
+  [ItemTypes.Movie]: getMovieById,
+}
+
 export const resolvers = {
   Query: {
     allWatched: (parent, args, { models }) => getWatched({}),
     watched: (parent, { id }, { models }) => getWatchedById(id),
   },
   Mutation: {
-    addWatched: isAuthenticated.createResolver(async (parent, { itemId, mediaType, tvData, rating, review, createdAt }, { user }) => {
+    addWatched: isAuthenticated.createResolver(
+      async (
+        parent,
+        {
+          itemId,
+          mediaType,
+          tvData,
+          rating,
+          review,
+          createdAt,
+        }: AddWatchedPayload,
+        { user }: { user: User },
+      ) => {
+
+      const { tmdbId } = await itemLoaders[mediaType](itemId);
+
+      const itemData = {
+        itemId,
+        itemType: mediaType,
+        tmdbId,
+      }
+
       const userId = user.id;
-      rating = rating ? {
+      const ratingItem = rating ? {
         ...rating,
+        ...itemData,
         userId,
       } : null;
 
-      review = review ? {
+      const reviewItem = review ? {
         ...review,
+        ...itemData,
         userId,
       } : null;
 
       return createWatchedGraph({
+        ...itemData,
         userId,
         tvData,
-        rating,
-        review,
+        rating: ratingItem,
+        review: reviewItem,
         createdAt,
-        itemType: mediaType.slice(0, 1).toUpperCase() + mediaType.slice(1),
       });
     }),
   },

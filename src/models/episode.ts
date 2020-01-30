@@ -3,6 +3,7 @@ import { gql, UserInputError } from 'apollo-server-core';
 import { BaseModel } from './baseModel';
 import { Season } from './season';
 import { getEpisodeById } from '../queries/episodeQueries';
+import { performance } from 'perf_hooks';
 
 // tslint:disable: variable-name
 export class Episode extends BaseModel {
@@ -67,8 +68,12 @@ export const typeDefs = gql`
 export const resolvers = {
   Query: {
     episode: (parent, { id }, { models }) => {
+      console.log('episode', id)
       try {
+        const t0 = performance.now();
         const episode = getEpisodeById(id);
+        const t1 = performance.now();
+        console.log("Episode fetch took " + (t1 - t0) + " milliseconds.");
 
         return episode;
       } catch (err) {

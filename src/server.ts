@@ -3,11 +3,12 @@ import * as http from 'http';
 import * as https from 'https';
 import * as fs from 'fs';
 import * as compression from 'compression';
+import * as morgan from 'morgan';
 import * as bodyParser from 'body-parser';
 import * as passport from 'passport';
 import * as errorHandler from 'errorhandler';
 import { ApolloServer } from 'apollo-server-express';
-import morgan = require('morgan');
+// // import morgan = require('morgan');
 import dotenv = require('dotenv');
 
 import { config } from './config';
@@ -66,7 +67,9 @@ export class Server {
   private static configureApp() {
     Server.app.use(bodyParser.urlencoded({ extended: true }));
     Server.app.use(bodyParser.json());
+    // @ts-ignore TODO: figure this out
     Server.app.use(compression());
+    // @ts-ignore TODO: figure this out
     Server.app.use(morgan('dev'));
     initializeApolloServer(Server.app);
   }

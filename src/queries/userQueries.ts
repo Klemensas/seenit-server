@@ -4,7 +4,7 @@ import { Transaction } from 'objection';
 import { knex } from '../config';
 import { User } from '../models/user';
 
-export function getUserById(id: number, connection: Transaction | Knex = knex) {
+export function getUserById(id: number | string, connection: Transaction | Knex = knex) {
   return User
     .query(connection)
     .findById(id)

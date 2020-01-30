@@ -57,14 +57,15 @@ export class Rating extends BaseModel {
 
   static jsonSchema = {
     type: 'object',
-    required: ['value', 'tmdbId', 'userId'],
+    required: ['value', 'itemId', 'userId'],
 
     properties: {
-      id: { type: 'integer' },
+      id: { type: 'string' },
       value: { type: 'float' },
-      // tmdbId: { type: 'integer' },
-      userId: { type: 'integer' },
-      watchedId: { type: 'integer' },
+      tmdbId: { type: 'integer' },
+      itemId: { type: 'string' },
+      userId: { type: 'string' },
+      watchedId: { type: 'string' },
     },
   };
 }

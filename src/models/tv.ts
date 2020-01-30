@@ -1,4 +1,3 @@
-import { QueryContext, ModelOptions } from 'objection';
 import { gql, UserInputError } from 'apollo-server-express';
 
 import { knex } from '../config';
@@ -9,6 +8,7 @@ import { getTvById } from '../queries/tvQueries';
 import { Season } from './season';
 import { Episode } from './episode';
 import { getSeasonsByTvId } from '../queries/seasonQueries';
+import { performance } from 'perf_hooks';
 
 export interface TvData {
   episode: number;
@@ -21,20 +21,6 @@ export interface Author {
   name?: string;
   gender?: number;
   profile_path?: string;
-}
-
-export interface Episode {
-  id: number;
-  air_date?: string;
-  episode_number?: number;
-  name?: string;
-  overview?: string;
-  production_code?: string;
-  season_number?: number;
-  show_id?: number;
-  still_path?: string;
-  vote_average?: number;
-  vote_count?: number;
 }
 
 export interface Network {
@@ -128,17 +114,17 @@ export class Tv extends BaseModel {
 export const typeDefs = gql`
   type Tv {
     id: ID!
-    backdrop_path: String
+    backdrop_path: String!
     created_by: [Author]
     episode_run_time: [Int]
-    first_air_date: String
+    first_air_date: String!
     genres: [Genre]
     homepage: String
     in_production: Boolean
     languages: [String]
     last_air_date: String
     last_episode_to_air: Episode
-    name: String
+    name: String!
     next_episode_to_air: Episode
     networks: [Network]
     number_of_episodes: Int
@@ -146,18 +132,18 @@ export const typeDefs = gql`
     origin_country: [String]
     original_language: String
     original_name: String
-    overview: String
+    overview: String!
     popularity: Int
-    poster_path: String
+    poster_path: String!
     production_companies: [Company]
     seasons: [Season]
     status: String
     type: String
-    vote_average: Float
-    vote_count: Int
+    vote_average: Float!
+    vote_count: Int!
     tmdbId: Int
-    season: [Season]
-    watched: [Watched]
+    season: [Season]!
+    watched: [Watched]!
   }
 
   type Author {
@@ -204,7 +190,12 @@ export const resolvers = {
   },
   Tv: {
     seasons: async (tv: Tv, args, { loaders }) => {
-      return getSeasonsByTvId(tv.id);
+      const t0 = performance.now();
+      const seasons = await getSeasonsByTvId(tv.id);
+      const t1 = performance.now();
+      console.log("Seasons took " + (t1 - t0) + " milliseconds.");
+
+      return seasons;
     },
   }
 };

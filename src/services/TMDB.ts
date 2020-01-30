@@ -98,7 +98,7 @@ export class TMDB {
     baseURL: 'https://api.themoviedb.org/3/',
     timeout: 3000,
     params: {
-      api_key: this.apikey,
+      api_key: this.apikey || 'd2e229b3cd34fc38ed94e2929dc631e9',
     },
   });
 
