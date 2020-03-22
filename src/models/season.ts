@@ -5,6 +5,7 @@ import { Tv } from './tv';
 import { Episode } from './episode';
 import { getSeasonById } from '../queries/seasonQueries';
 import { getEpisodesBySeasonId } from '../queries/episodeQueries';
+import { performance } from 'perf_hooks';
 
 // tslint:disable: variable-name
 export class Season extends BaseModel {
@@ -82,6 +83,14 @@ export const resolvers = {
     },
   },
   Season: {
-    episodes: (season: Season, args, { loaders }) => getEpisodesBySeasonId(season.id),
+    episodes: async (season: Season, args, { loaders }) => {
+      const t0 = performance.now();
+      const seasonEpisodes = await getEpisodesBySeasonId(season.id);
+      const t1 = performance.now();
+      console.log("Season episodes took " + (t1 - t0) + " milliseconds.");
+
+      // return getEpisodesBySeasonId(season.id)
+      return seasonEpisodes;
+    },
   },
 };

@@ -13,5 +13,6 @@ export function getEpisodeById(id: string, connection: Transaction | Knex = knex
 export function getEpisodesBySeasonId(seasonId: string, connection: Transaction | Knex = knex) {
   return Episode
     .query(connection)
-    .where({ seasonId });
+    .where({ seasonId })
+    .orderBy('episode_number', 'ASC');
 }

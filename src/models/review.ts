@@ -53,14 +53,15 @@ export class Review extends BaseModel {
 
   static jsonSchema = {
     type: 'object',
-    required: ['body', 'tmdbId', 'userId'],
+    required: ['body', 'itemId', 'userId'],
 
     properties: {
       id: { type: 'integer' },
       body: { type: 'string' },
-      // tmdbId: { type: 'integer' },
-      userId: { type: 'integer' },
-      watchedId: { type: 'integer' },
+      tmdbId: { type: 'integer' },
+      itemId: { type: 'string' },
+      userId: { type: 'string' },
+      watchedId: { type: 'string' },
     },
   };
 }

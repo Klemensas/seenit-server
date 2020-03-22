@@ -1,10 +1,10 @@
-import { QueryContext, ModelOptions } from 'objection';
 import { gql } from 'apollo-server-express';
 
 import { knex } from '../config';
 import { BaseModel } from './baseModel';
 import { Watched, ItemTypes } from './watched';
 import { getMovieById } from '../queries/movieQueries';
+import { getWatchedWithReviews, getWatched } from '../queries/watchedQueries';
 
 export interface Genre {
   id: number;
@@ -116,32 +116,33 @@ export class Movie extends BaseModel {
 export const typeDefs = gql`
   type Movie {
     id: ID!
-    adult: Boolean
-    backdrop_path: String
+    adult: Boolean!
+    backdrop_path: String!
     belongs_to_collection: Collection
-    budget: Int
+    budget: Int!
     genre: [Genre]
     homepage: String
     imdb_id: String
     original_language: String
     original_title: String
-    overview: String
+    overview: String!
     popularity: Float
-    poster_path: String
+    poster_path: String!
     production_companies: [Company]
     production_countries: [Country]
-    release_date: String
+    release_date: String!
     revenue: Int
     runtime: Int
     spoken_languages: [Language]
     status: String
     tagline: String
-    title: String
+    title: String!
     video: Boolean
-    vote_average: Float
-    vote_count: Int
+    vote_average: Float!
+    vote_count: Int!
     tmdbId: Int
-    watched: [Watched]
+    # watched: [Watched!]!
+    watched(cursor: String, filter: String): WatchedCursor!
   }
 
   type Genre {
@@ -182,4 +183,19 @@ export const resolvers = {
   Query: {
     movie: (parent, { id }, { models }) => getMovieById(id),
   },
+  Movie: {
+    watched: async (movie, { cursor, filter }, { loaders }) => {
+      const count = 12;
+      const query = filter ? getWatchedWithReviews : getWatched;
+      cursor = cursor || Date.now();
+
+      const { total, results } = await query({ itemId: movie.id }, { count, after: cursor });
+
+      const lastItem = results[results.length - 1] as any;
+      const newCursor = lastItem ? lastItem.createdAt : undefined;
+      const hasMore = total > count;
+
+      return { watched: results, hasMore, cursor: newCursor, filter };
+    }
+  }
 };
