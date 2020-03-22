@@ -1,10 +1,19 @@
 import * as bcrypt from 'bcrypt';
 import { QueryContext } from 'objection';
-import { gql, UserInputError, AuthenticationError } from 'apollo-server-express';
+import {
+  gql,
+  UserInputError,
+  AuthenticationError,
+} from 'apollo-server-express';
 
 import { BaseModel } from './baseModel';
-import { getUsers, getUser, createUser, getFullUser } from '../queries/userQueries';
 import { getWatched } from '../queries/watchedQueries';
+import {
+  getUsers,
+  getUser,
+  createUser,
+  getFullUser,
+} from '../queries/userQueries';
 import { Auth } from '../auth/auth';
 import { isAuthenticated } from '../apollo/resolvers';
 
@@ -42,8 +51,9 @@ export class User extends BaseModel {
   };
 
   authenticate(password: string) {
-    return this.encryptPassword(password)
-      .then((encryptedPass) => this.password === encryptedPass);
+    return this.encryptPassword(password).then(
+      encryptedPass => this.password === encryptedPass,
+    );
   }
 
   encryptPassword(password: string): Promise<string> {
@@ -60,7 +70,7 @@ export class User extends BaseModel {
 
   async updatePassword(): Promise<void> {
     if (this.password) {
-      if ((!this.password || !this.password.length)) {
+      if (!this.password || !this.password.length) {
         throw new Error('Invalid password');
       }
     }
@@ -83,11 +93,7 @@ export const typeDefs = gql`
   }
 
   extend type Mutation {
-    register(
-      name: String!
-      email: String!
-      password: String!
-    ): LocalAuth!
+    register(name: String!, email: String!, password: String!): LocalAuth!
     login(email: String!, password: String!): LocalAuth!
     # updateUser(username: String!): User!
     # deleteUser(id: ID!): Boolean!
@@ -112,7 +118,9 @@ export const typeDefs = gql`
 
 export const resolvers = {
   Query: {
-    users: isAuthenticated.createResolver((parent, args, { models }) => getUsers({})),
+    users: isAuthenticated.createResolver((parent, args, { models }) =>
+      getUsers({}),
+    ),
     user: (parent, { id, name }, { models }) => {
       return getUser(name ? { name } : { id });
     },
@@ -131,9 +139,7 @@ export const resolvers = {
       const user = await getFullUser({ email });
 
       if (!user) {
-        throw new UserInputError(
-          'No user found with this login credentials.',
-        );
+        throw new UserInputError('No user found with this login credentials.');
       }
 
       const isValid = await Auth.comparePasswords(password, user.password);
@@ -162,4 +168,4 @@ export const resolvers = {
       return { watched: results, hasMore, cursor: newCursor, filter }
     },
   },
-}
+};
