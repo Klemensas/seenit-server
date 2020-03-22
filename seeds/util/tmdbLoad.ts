@@ -14,7 +14,12 @@ async function loadList(list = tvIds, tmDb: TMDB = tmdbService) {
       const { items, headers } = await loadBatch(list, remainingRequests);
       loadedItems = loadedItems.concat(items);
       const nextBatch = headers['x-ratelimit-reset'];
-      await new Promise((resolve) => setTimeout(() => { console.log('resolve', (+nextBatch - Date.now() / 1000) * 1000); resolve() }, (+nextBatch - Date.now() / 1000) * 1000));
+      await new Promise((resolve) =>
+        setTimeout(() => {
+          console.log('resolve', (+nextBatch - Date.now() / 1000) * 1000);
+          resolve();
+        }, (+nextBatch - Date.now() / 1000) * 1000),
+      );
       console.log('wait done', Date.now() / 1000, nextBatch);
       remainingRequests = maxRequests;
     }
@@ -27,10 +32,12 @@ async function loadList(list = tvIds, tmDb: TMDB = tmdbService) {
 
   async function loadBatch(list: any[], batchSize) {
     const batch = list.slice(0, batchSize);
-    const batchResults = await Promise.all(batch.map((id) => tmDb.get('tv/' + id)));
+    const batchResults = await Promise.all(
+      batch.map((id) => tmDb.get('tv/' + id)),
+    );
     const headers = batchResults[batchResults.length - 1].headers;
     const items = batchResults.map(({ data }) => data);
-    list.splice(0, batchSize)
+    list.splice(0, batchSize);
     return { items, headers };
   }
 }

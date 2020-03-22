@@ -1,4 +1,4 @@
-exports.up = function(knex, Promise) {
+exports.up = function (knex, Promise) {
   return knex.schema
     .createTable('Season', (table) => {
       table.uuid('id').defaultTo(knex.raw('uuid_generate_v4()')).primary();
@@ -9,11 +9,7 @@ exports.up = function(knex, Promise) {
       table.string('poster_path');
       table.integer('season_number');
       table.integer('tmdbId').unsigned().notNullable();
-      table
-        .uuid('tvId')
-        .references('id')
-        .inTable('Tv')
-        .onDelete('CASCADE');
+      table.uuid('tvId').references('id').inTable('Tv').onDelete('CASCADE');
       table.bigInteger('createdAt').unsigned().notNullable();
       table.bigInteger('updatedAt').unsigned().notNullable();
     })
@@ -38,10 +34,8 @@ exports.up = function(knex, Promise) {
       table.bigInteger('createdAt').unsigned().notNullable();
       table.bigInteger('updatedAt').unsigned().notNullable();
     });
-}
+};
 
-exports.down = function(knex, Promise) {
-  return knex.schema
-    .dropTableIfExists('Episode')
-    .dropTableIfExists('Season')
-}
+exports.down = function (knex, Promise) {
+  return knex.schema.dropTableIfExists('Episode').dropTableIfExists('Season');
+};

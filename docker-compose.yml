@@ -12,7 +12,7 @@ postgres:
     - DB_NAME=screen
     - DB_EXTENSION=pg_trgm,"uuid-ossp"
   ports:
-    - "5434:5432"
+    - '5434:5432'
   volumes_from:
     - postgres-data
   command: -c "max_stack_depth=6MB"

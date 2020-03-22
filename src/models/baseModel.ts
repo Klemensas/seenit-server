@@ -9,7 +9,9 @@ class DbErrors extends Model {
     this: Constructor<QM>,
     trxOrKnex?: Transaction | knex,
   ): QueryBuilder<QM> {
-    return super.query.apply(this, arguments).onError((err) => Promise.reject(dbErrors.wrapError(err)));
+    return super.query
+      .apply(this, arguments)
+      .onError((err) => Promise.reject(dbErrors.wrapError(err)));
   }
 }
 

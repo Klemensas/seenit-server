@@ -1,4 +1,3 @@
-
 import { knex } from '../src/config';
 import userSeed from './user';
 import movieSeed from './movie';
@@ -20,7 +19,7 @@ import watchedSeed from './watched';
     const userWatched = users.reduce((acc, { id }) => {
       acc[id] = watched.filter(({ userId }) => userId === id);
       return acc;
-    }, {})
+    }, {});
     // await Promise.all([
     //   reviewSeed(knex, users, userWatched, itemList),
     //   ratingSeed(knex, users, userWatched, itemList),

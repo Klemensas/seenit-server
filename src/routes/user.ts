@@ -32,7 +32,9 @@ export class UserRouter extends BaseRouter {
 
   public async getUserProfile(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.params.userId) { return next('Missing userId'); }
+      if (!req.params.userId) {
+        return next('Missing userId');
+      }
       const user = await getUserById(req.params.userId);
 
       res.json(user);

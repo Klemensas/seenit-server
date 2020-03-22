@@ -12,22 +12,20 @@ export function pickFromInterval(rngNo: number, interval: [number, number]) {
 }
 
 export const generatePlaceholder = {
-  sentence: (rngFn: Function, wordCount: [number, number] = [5, 10], wordList = placeholdeWordList) =>
-    Array.from(
-      { length: pickFromInterval(rngFn(), wordCount) },
-      () => pickItem(rngFn(), wordList),
-    ).join(' ') + '.'
-  ,
+  sentence: (
+    rngFn: Function,
+    wordCount: [number, number] = [5, 10],
+    wordList = placeholdeWordList,
+  ) =>
+    Array.from({ length: pickFromInterval(rngFn(), wordCount) }, () =>
+      pickItem(rngFn(), wordList),
+    ).join(' ') + '.',
   paragraph: (rngFn: Function, sentenceCount: [number, number] = [10, 20]) =>
-    Array.from(
-      { length: pickFromInterval(rngFn(), sentenceCount)  },
-      () => generatePlaceholder.sentence(rngFn)
-    ).join(' ')
-  ,
+    Array.from({ length: pickFromInterval(rngFn(), sentenceCount) }, () =>
+      generatePlaceholder.sentence(rngFn),
+    ).join(' '),
   text: (rngFn: Function, paragraphCount: [number, number] = [3, 12]) =>
-    Array.from(
-      { length: pickFromInterval(rngFn(), paragraphCount)  },
-      () => generatePlaceholder.paragraph(rngFn)
-    ).join('\n')
-  ,
+    Array.from({ length: pickFromInterval(rngFn(), paragraphCount) }, () =>
+      generatePlaceholder.paragraph(rngFn),
+    ).join('\n'),
 };

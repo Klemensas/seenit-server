@@ -155,13 +155,12 @@ interface AddWatchedPayload {
   rating?: Pick<Rating, 'value'>;
   review?: Pick<Review, 'body'>;
   tvData?: TvData;
-
 }
 
 const itemLoaders = {
   [ItemTypes.Tv]: getTvById,
   [ItemTypes.Movie]: getMovieById,
-}
+};
 
 export const resolvers = {
   Query: {

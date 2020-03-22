@@ -9,29 +9,47 @@
       "type": "node",
       "request": "launch",
       "args": ["src/index.ts"],
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register", "-r", "dotenv/config"],
+      "runtimeArgs": [
+        "--nolazy",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "dotenv/config"
+      ],
       "sourceMaps": true,
       "outputCapture": "std",
       "cwd": "${workspaceRoot}",
       "protocol": "inspector"
-    }, 
+    },
     {
       "name": "Run daily exports",
       "type": "node",
       "request": "launch",
       "args": ["src/export/changes.ts"],
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register", "-r", "dotenv/config"],
+      "runtimeArgs": [
+        "--nolazy",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "dotenv/config"
+      ],
       "sourceMaps": true,
       "outputCapture": "std",
       "cwd": "${workspaceRoot}",
       "protocol": "inspector"
-    }, 
+    },
     {
       "name": "Run seed",
       "type": "node",
       "request": "launch",
       "args": ["./seeds/index.ts"],
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register", "-r", "dotenv/config"],
+      "runtimeArgs": [
+        "--nolazy",
+        "-r",
+        "ts-node/register",
+        "-r",
+        "dotenv/config"
+      ],
       "sourceMaps": true,
       "outputCapture": "std",
       "cwd": "${workspaceRoot}",

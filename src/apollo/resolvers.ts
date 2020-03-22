@@ -68,10 +68,10 @@ export const serviceResolvers = {
           .limit(20)
           // .omit(['score', 'popularity'])
           .debug()
-          .then(r => {
+          .then((r) => {
             return r;
           })
-          .catch(err => {
+          .catch((err) => {
             console.log('eeererere', err);
             throw err;
           })

@@ -52,7 +52,7 @@ export class User extends BaseModel {
 
   authenticate(password: string) {
     return this.encryptPassword(password).then(
-      encryptedPass => this.password === encryptedPass,
+      (encryptedPass) => this.password === encryptedPass,
     );
   }
 
@@ -159,13 +159,16 @@ export const resolvers = {
       const count = 12;
       cursor = cursor || Date.now();
 
-      const { total, results } = await getWatched({ userId: user.id }, { count, after: cursor });
+      const { total, results } = await getWatched(
+        { userId: user.id },
+        { count, after: cursor },
+      );
 
       const lastItem = results[results.length - 1] as any;
       const newCursor = lastItem ? lastItem.createdAt : undefined;
       const hasMore = total > count;
 
-      return { watched: results, hasMore, cursor: newCursor, filter }
+      return { watched: results, hasMore, cursor: newCursor, filter };
     },
   },
 };

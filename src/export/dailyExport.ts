@@ -53,8 +53,8 @@ export class DailyExports {
   }
 
   get estimate() {
-    const timePast = Date.now() - +(this.exportJob.start);
-    return 1 / this.totalDone * timePast / 1000;
+    const timePast = Date.now() - +this.exportJob.start;
+    return ((1 / this.totalDone) * timePast) / 1000;
   }
 
   async loadDailies(date: Date, skipStored?: boolean) {
@@ -92,11 +92,23 @@ export class DailyExports {
       start: new Date(),
     };
 
-    await this.readFileLines(DailyExports.filePath.movie, Movie, this.parseLine('movie'));
-    await this.readFileLines(DailyExports.filePath.tv, Tv, this.parseLine('tv'));
+    await this.readFileLines(
+      DailyExports.filePath.movie,
+      Movie,
+      this.parseLine('movie'),
+    );
+    await this.readFileLines(
+      DailyExports.filePath.tv,
+      Tv,
+      this.parseLine('tv'),
+    );
     await Promise.all([
-      new Promise((resolve) => fs.unlink(DailyExports.filePath.movie, (err) => resolve())),
-      new Promise((resolve) => fs.unlink(DailyExports.filePath.tv, (err) => resolve())),
+      new Promise((resolve) =>
+        fs.unlink(DailyExports.filePath.movie, (err) => resolve()),
+      ),
+      new Promise((resolve) =>
+        fs.unlink(DailyExports.filePath.tv, (err) => resolve()),
+      ),
     ]);
     this.isRunning = false;
   }
@@ -112,7 +124,9 @@ export class DailyExports {
         this.exportJob.progress[type] += lineLength;
         this.exportJob.progress.total += lineLength;
 
-        if (parsedData.adult) { return; }
+        if (parsedData.adult) {
+          return;
+        }
         if (this.exportJob.skipStored) {
           reader.pause();
           const isStored = stored.has(parsedData.id);
@@ -124,7 +138,11 @@ export class DailyExports {
         }
 
         reader.pause();
-        const { data, remainingLimit, nextBatch } = await DailyExports.fetchItemWithDeletion(parsedData.id, type);
+        const {
+          data,
+          remainingLimit,
+          nextBatch,
+        } = await DailyExports.fetchItemWithDeletion(parsedData.id, type);
         remainingRequests = remainingLimit;
 
         if (!data) {
@@ -135,39 +153,59 @@ export class DailyExports {
         await this.storeBatch([data], type);
         const itemEnd = new Date();
         this.exportJob.itemsStored++;
-        this.exportJob.averageTime = (+itemEnd - +this.exportJob.start) / this.exportJob.itemsStored;
+        this.exportJob.averageTime =
+          (+itemEnd - +this.exportJob.start) / this.exportJob.itemsStored;
 
         if (!remainingLimit) {
-          await new Promise((resolve) => setTimeout(resolve, (nextBatch - Math.floor(Date.now() / 1000)) * 1000 + 1000));
+          await new Promise((resolve) =>
+            setTimeout(
+              resolve,
+              (nextBatch - Math.floor(Date.now() / 1000)) * 1000 + 1000,
+            ),
+          );
         }
 
         this.updateLongest({
           type,
           id: parsedData.id,
           time: +itemEnd - +itemStart,
-        })
+        });
         reader.resume();
         return;
       } catch (err) {
-        logError(`${err.toString()}-${err.response ? JSON.stringify(err.response.headers) : ''}-${remainingRequests}`, (error) => {
-          process.exit(1);
-        });
+        logError(
+          `${err.toString()}-${
+            err.response ? JSON.stringify(err.response.headers) : ''
+          }-${remainingRequests}`,
+          (error) => {
+            process.exit(1);
+          },
+        );
       }
     };
   }
 
   updateLongest(itemLength: LongestItem) {
-    this.exportJob.longestItem = itemLength.time > this.exportJob.longestItem.time ? itemLength : this.exportJob.longestItem;
+    this.exportJob.longestItem =
+      itemLength.time > this.exportJob.longestItem.time
+        ? itemLength
+        : this.exportJob.longestItem;
   }
 
-  async readFileLines(storagePath: string, model: typeof Movie | typeof Tv, handler: (line: string, reader: any, stored: Set<number>) => void) {
+  async readFileLines(
+    storagePath: string,
+    model: typeof Movie | typeof Tv,
+    handler: (line: string, reader: any, stored: Set<number>) => void,
+  ) {
     const items = await (model as any).query(knex).where({}).select('tmdbId');
     const itemSet = new Set<number>(items.map(({ tmdbId }) => tmdbId));
     return new Promise<void>((resolve, reject) => {
       const lineReader = new LineByLineReader(storagePath);
       lineReader.on('error', (err) => reject(err));
-      lineReader.on('end', ()  => resolve());
-      lineReader.on('line', (line: string) => handler(line, lineReader, itemSet));
+      lineReader.on('end', () => resolve());
+      lineReader.on('line', (line: string) =>
+        handler(line, lineReader, itemSet),
+      );
     });
   }
 
@@ -178,25 +216,33 @@ export class DailyExports {
     const items = await (model as any).query(knex).whereIn('tmdbId', tmdbIds);
     const insertedTmdbIds = items.map(({ tmdbId }) => tmdbId);
 
-    const filteredBatch = batch.filter(({ id }) => !insertedTmdbIds.includes(id));
+    const filteredBatch = batch.filter(
+      ({ id }) => !insertedTmdbIds.includes(id),
+    );
 
     return (model as any).query(knex).insertGraph(
-      type === 'tv' ?
-        formatTvItems([], filteredBatch) :
-        filteredBatch.map(({ id, ...item }) => ({
-          ...item,
-          tmdbId: id,
-        })),
+      type === 'tv'
+        ? formatTvItems([], filteredBatch)
+        : filteredBatch.map(({ id, ...item }) => ({
+            ...item,
+            tmdbId: id,
+          })),
     );
   }
 
   static async storeDaysExport(date: Date, tmdbUrl: ExportPaths) {
-    const dateString = [String(date.getUTCMonth() + 1).padStart(2, '0'), String(date.getUTCDate()).padStart(2, '0'), date.getUTCFullYear()].join('_');
+    const dateString = [
+      String(date.getUTCMonth() + 1).padStart(2, '0'),
+      String(date.getUTCDate()).padStart(2, '0'),
+      date.getUTCFullYear(),
+    ].join('_');
     const type = tmdbUrl === ExportPaths.movie ? 'movie' : 'tv';
     const storagePath = DailyExports.filePath[type];
     const exists = await DailyExports.fileExists(storagePath);
 
-    if (exists) { return; }
+    if (exists) {
+      return;
+    }
 
     const url = `${tmdbUrl}${dateString}.json.gz`;
     fs.mkdirSync(path.dirname(storagePath), { recursive: true });
@@ -214,21 +260,29 @@ export class DailyExports {
   }
 
   static async fileExists(storagePath: string) {
-    return new Promise<boolean>((resolve) => fs.exists(storagePath, (exists) => resolve(exists)));
+    return new Promise<boolean>((resolve) =>
+      fs.exists(storagePath, (exists) => resolve(exists)),
+    );
   }
 
   static async fileSize(storagePath: string) {
-    return new Promise<number>((resolve, reject) => fs.stat(storagePath, (err, { size }) => {
-      if (err) { return reject(err); }
+    return new Promise<number>((resolve, reject) =>
+      fs.stat(storagePath, (err, { size }) => {
+        if (err) {
+          return reject(err);
+        }
 
-      resolve(size);
-    }));
+        resolve(size);
+      }),
+    );
   }
 
   static async fetchItem(id: number, type: MediaType) {
-    const { data, headers } = await (type === 'tv' ? TMDB.getTvWithEpisodes(id) :  TMDB.get(`${type}/${id}`, {
-      timeout: 0,
-    }));
+    const { data, headers } = await (type === 'tv'
+      ? TMDB.getTvWithEpisodes(id)
+      : TMDB.get(`${type}/${id}`, {
+          timeout: 0,
+        }));
 
     return {
       data,
@@ -263,7 +317,9 @@ export class DailyExports {
         if (err.response.status === 429) {
           const retryAfter = +err.response.headers['retry-after'];
           logError(`Trying to recover - ${id} -- ${err.toString()}`);
-          await new Promise((resolve) => setTimeout(() => resolve(), retryAfter * 1000));
+          await new Promise((resolve) =>
+            setTimeout(() => resolve(), retryAfter * 1000),
+          );
           return this.fetchItem(id, type);
         }
       }
@@ -278,12 +334,12 @@ export class DailyExports {
   }
 
   static lastBatchItem(requests: any[]) {
-    return requests
-      .sort((a, b) =>
+    return requests.sort(
+      (a, b) =>
         // Remove last number to componsate for API reset time fluctuations
         Math.floor(b.nextBatch / 10) - Math.floor(a.nextBatch / 10) ||
         a.remainingLimit - b.remainingLimit,
-      )[0];
+    )[0];
   }
 }
 

@@ -1,15 +1,15 @@
 import { gql } from 'apollo-server-express';
 
 export const baseType = gql`
-type Query {
-  _: Boolean
-}
-type Mutation {
-  _: Boolean
-}
-type Subscription {
-  _: Boolean
-}
+  type Query {
+    _: Boolean
+  }
+  type Mutation {
+    _: Boolean
+  }
+  type Subscription {
+    _: Boolean
+  }
 `;
 
 export const serviceTypeDefs = gql`
@@ -62,7 +62,6 @@ export const serviceTypeDefs = gql`
     known_for: TmdbMedia
     media_type: TmdbMediaType
   }
-
 
   type Search {
     results: [TmdbMedia!]

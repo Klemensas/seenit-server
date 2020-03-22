@@ -1,4 +1,4 @@
-exports.up = function(knex, Promise) {
+exports.up = function (knex, Promise) {
   return knex.schema
     .alterTable('Watched', (table) => {
       table.integer('tmdbId').nullable().alter();
@@ -11,10 +11,10 @@ exports.up = function(knex, Promise) {
     .alterTable('Rating', (table) => {
       table.integer('tmdbId').unsigned();
       table.uuid('itemId').notNullable().alter();
-    })
+    });
 };
 
-exports.down = function(knex, Promise) {
+exports.down = function (knex, Promise) {
   return knex.schema
     .alterTable('Watched', (table) => {
       table.integer('tmdbId').notNullable().alter();
@@ -27,5 +27,5 @@ exports.down = function(knex, Promise) {
     .alterTable('Rating', (table) => {
       table.dropColumn('tmdbId');
       table.uuid('itemId').nullable().alter();
-    })
+    });
 };
