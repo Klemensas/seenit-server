@@ -89,9 +89,9 @@ export interface SearchParams {
 }
 
 export type Media =
-  ({ media_type: 'movie' } & Movie) |
-  ({ media_type: 'tv' } & TV) |
-  ({ media_type: 'person' } & Person);
+  | ({ media_type: 'movie' } & Movie)
+  | ({ media_type: 'tv' } & TV)
+  | ({ media_type: 'person' } & Person);
 
 export class TMDB {
   private httpClient = axios.create({
@@ -102,15 +102,20 @@ export class TMDB {
     },
   });
 
-  constructor(private apikey: string) {
-  }
+  constructor(private apikey: string) {}
 
   get<T = any>(query: string, config?: AxiosRequestConfig) {
     return this.httpClient.get<T>(query, config);
   }
 
-  async search<T = Media>(query: string, searchParams: SearchParams = { include_adult: false }, endpoint: 'movie' | 'tv' | 'person' | 'multi' = 'multi') {
-    const result = await this.get<TMDBResponse<T>>('/search/' + endpoint, { params: { query, ...searchParams }});
+  async search<T = Media>(
+    query: string,
+    searchParams: SearchParams = { include_adult: false },
+    endpoint: 'movie' | 'tv' | 'person' | 'multi' = 'multi',
+  ) {
+    const result = await this.get<TMDBResponse<T>>('/search/' + endpoint, {
+      params: { query, ...searchParams },
+    });
     return result.data;
   }
 
@@ -137,12 +142,21 @@ export class TMDB {
   getTvWithEpisodes = async (tvId: number, seasons: TmdbSeason[] = []) => {
     const seasonsPerCall = 20;
 
-    const targetSeasons = seasons.length ?
-      seasons.slice(0, seasonsPerCall).map(({ season_number }) => season_number) :
-      Array.from({ length: seasonsPerCall }).map((a, i) => i);
-    const params = { append_to_response: targetSeasons.map((name) => `season/${name}`).join(',') };
+    const targetSeasons = seasons.length
+      ? seasons
+          .slice(0, seasonsPerCall)
+          .map(({ season_number }) => season_number)
+      : Array.from({ length: seasonsPerCall }).map((a, i) => i);
+    const params = {
+      append_to_response: targetSeasons
+        .map((name) => `season/${name}`)
+        .join(','),
+    };
 
-    let { data, headers } = await this.get<TV>('/tv/' + tvId, { params, timeout: 0 });
+    let { data, headers } = await this.get<TV>('/tv/' + tvId, {
+      params,
+      timeout: 0,
+    });
 
     const missingSeasons = this.missingSeasonData(data, seasons);
     if (missingSeasons && missingSeasons.length) {
@@ -152,7 +166,9 @@ export class TMDB {
     }
 
     // Bail out if offset present
-    if (seasons.length) { return { data, headers }; }
+    if (seasons.length) {
+      return { data, headers };
+    }
 
     // Add episode data to season array and remove individual season props
     data.seasons.forEach((season, i) => {
@@ -163,13 +179,17 @@ export class TMDB {
     });
 
     return { data, headers };
-  }
+  };
 
   missingSeasonData(item: TV, seasons: TmdbSeason[]) {
-    if (!item.seasons || !item.seasons.length) { return null; }
+    if (!item.seasons || !item.seasons.length) {
+      return null;
+    }
 
     const target = seasons.length ? seasons : item.seasons;
-    return target.filter(({ season_number }) => !item[`season/${season_number}`]);
+    return target.filter(
+      ({ season_number }) => !item[`season/${season_number}`],
+    );
   }
 
   // private async refreshToken() {

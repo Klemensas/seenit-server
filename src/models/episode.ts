@@ -68,12 +68,12 @@ export const typeDefs = gql`
 export const resolvers = {
   Query: {
     episode: (parent, { id }, { models }) => {
-      console.log('episode', id)
+      console.log('episode', id);
       try {
         const t0 = performance.now();
         const episode = getEpisodeById(id);
         const t1 = performance.now();
-        console.log("Episode fetch took " + (t1 - t0) + " milliseconds.");
+        console.log('Episode fetch took ' + (t1 - t0) + ' milliseconds.');
 
         return episode;
       } catch (err) {

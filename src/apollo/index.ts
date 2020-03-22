@@ -2,12 +2,27 @@ import * as express from 'express';
 import { ApolloServer, AuthenticationError } from 'apollo-server-express';
 import { mergeDeep } from 'apollo-utilities';
 
-import { typeDefs as watchedTypeDefs, resolvers as watchedResolvers } from '../models/watched';
-import { typeDefs as userTypeDefs, resolvers as userResolvers } from '../models/user';
-import { typeDefs as movieTypeDefs, resolvers as movieResolvers } from '../models/movie';
+import {
+  typeDefs as watchedTypeDefs,
+  resolvers as watchedResolvers,
+} from '../models/watched';
+import {
+  typeDefs as userTypeDefs,
+  resolvers as userResolvers,
+} from '../models/user';
+import {
+  typeDefs as movieTypeDefs,
+  resolvers as movieResolvers,
+} from '../models/movie';
 import { typeDefs as tvTypeDefs, resolvers as tvResolvers } from '../models/tv';
-import { typeDefs as seasonTypeDefs, resolvers as seasonResolvers } from '../models/season';
-import { typeDefs as episodeTypeDefs, resolvers as episodeResolvers } from '../models/episode';
+import {
+  typeDefs as seasonTypeDefs,
+  resolvers as seasonResolvers,
+} from '../models/season';
+import {
+  typeDefs as episodeTypeDefs,
+  resolvers as episodeResolvers,
+} from '../models/episode';
 import { typeDefs as ratingTypeDefs } from '../models/rating';
 import { typeDefs as reviewTypeDefs } from '../models/review';
 import { Auth } from '../auth/auth';
@@ -43,7 +58,10 @@ export function initializeApolloServer(app: express.Express) {
     context: async ({ req, res }) => {
       if (req) {
         if (req.headers.authorization) {
-          const token = req.headers.authorization.indexOf('Bearer ') === 0 ? req.headers.authorization.slice(7) : null;
+          const token =
+            req.headers.authorization.indexOf('Bearer ') === 0
+              ? req.headers.authorization.slice(7)
+              : null;
           try {
             const user = await Auth.getUserFromToken(token);
             return { user };

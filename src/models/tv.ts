@@ -92,8 +92,8 @@ export class Tv extends BaseModel {
       join: {
         from: 'Tv.id',
         to: 'Season.tvId',
-      }
-    }
+      },
+    },
   };
 
   static jsonSchema = {
@@ -193,9 +193,9 @@ export const resolvers = {
       const t0 = performance.now();
       const seasons = await getSeasonsByTvId(tv.id);
       const t1 = performance.now();
-      console.log("Seasons took " + (t1 - t0) + " milliseconds.");
+      console.log('Seasons took ' + (t1 - t0) + ' milliseconds.');
 
       return seasons;
     },
-  }
+  },
 };

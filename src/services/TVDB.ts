@@ -21,11 +21,16 @@ export class TVDB {
   });
   private refreshTimer: any;
 
-  constructor(private credentials: TvDbCredentials, private settings: TvDbSettings = { refreshToken: 72000000 }) {
-  }
+  constructor(
+    private credentials: TvDbCredentials,
+    private settings: TvDbSettings = { refreshToken: 72000000 },
+  ) {}
 
   async authorize() {
-    const response = await this.httpClient.post<TokenResponse>('/login', this.credentials);
+    const response = await this.httpClient.post<TokenResponse>(
+      '/login',
+      this.credentials,
+    );
     this.setHttpToken(response.data.token);
     setTimeout(() => this.refreshToken(), 3000);
   }
@@ -40,7 +45,10 @@ export class TVDB {
     this.httpClient.defaults.headers.Authorization = 'Bearer ' + token;
 
     if (this.settings.refreshToken) {
-      this.refreshTimer = setTimeout(() => this.refreshToken(), this.settings.refreshToken);
+      this.refreshTimer = setTimeout(
+        () => this.refreshToken(),
+        this.settings.refreshToken,
+      );
     }
   }
 }

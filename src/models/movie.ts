@@ -35,13 +35,13 @@ export interface Language {
   name?: string;
 }
 
-export type MovieStatus = 'Rumored'
-| 'Planned'
-| 'In Production'
-| 'Post Production'
-| 'Released'
-| 'Canceled'
-;
+export type MovieStatus =
+  | 'Rumored'
+  | 'Planned'
+  | 'In Production'
+  | 'Post Production'
+  | 'Released'
+  | 'Canceled';
 
 // tslint:disable: variable-name
 export class Movie extends BaseModel {
@@ -189,13 +189,16 @@ export const resolvers = {
       const query = filter ? getWatchedWithReviews : getWatched;
       cursor = cursor || Date.now();
 
-      const { total, results } = await query({ itemId: movie.id }, { count, after: cursor });
+      const { total, results } = await query(
+        { itemId: movie.id },
+        { count, after: cursor },
+      );
 
       const lastItem = results[results.length - 1] as any;
       const newCursor = lastItem ? lastItem.createdAt : undefined;
       const hasMore = total > count;
 
       return { watched: results, hasMore, cursor: newCursor, filter };
-    }
-  }
+    },
+  },
 };

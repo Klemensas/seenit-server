@@ -1,4 +1,4 @@
-const config = require('./src/config/environment'); 
+const config = require('./src/config/environment');
 
 module.exports = {
   client: 'postgresql',

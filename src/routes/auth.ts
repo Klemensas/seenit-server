@@ -10,12 +10,16 @@ export class AuthRouter extends BaseRouter {
   }
 
   private buildRoutes() {
-    this.router.post('/', (req, res, next) => passport.authenticate('local', (err, user, info) => {
-      if (err || !user) {
-        return res.status(401).json({ message: 'Email or password incorrect' });
-      }
-      const token = Auth.signToken(user);
-      res.json({ token, user });
-    })(req, res, next));
+    this.router.post('/', (req, res, next) =>
+      passport.authenticate('local', (err, user, info) => {
+        if (err || !user) {
+          return res
+            .status(401)
+            .json({ message: 'Email or password incorrect' });
+        }
+        const token = Auth.signToken(user);
+        res.json({ token, user });
+      })(req, res, next),
+    );
   }
 }

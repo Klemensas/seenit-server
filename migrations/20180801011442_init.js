@@ -1,5 +1,4 @@
-
-exports.up = function(knex, Promise) {
+exports.up = function (knex, Promise) {
   return knex.schema
     .createTable('User', (table) => {
       table.increments('id').primary();
@@ -85,7 +84,8 @@ exports.up = function(knex, Promise) {
         .inTable('User')
         .onDelete('CASCADE');
       table.uuid('itemId');
-      table.foreign('itemId')
+      table
+        .foreign('itemId')
         .onDelete('CASCADE')
         .references(['Movie.id', 'Tv.id']);
       table.enum('itemType', ['Movie', 'Tv']);
@@ -111,7 +111,8 @@ exports.up = function(knex, Promise) {
         .inTable('Watched')
         .onDelete('CASCADE');
       table.uuid('itemId');
-      table.foreign('itemId')
+      table
+        .foreign('itemId')
         .onDelete('CASCADE')
         .references(['Movie.id', 'Tv.id']);
       table.enum('itemType', ['Movie', 'Tv']);
@@ -136,19 +137,20 @@ exports.up = function(knex, Promise) {
         .inTable('Watched')
         .onDelete('CASCADE');
       table.uuid('itemId');
-      table.foreign('itemId')
+      table
+        .foreign('itemId')
         .onDelete('CASCADE')
         .references(['Movie.id', 'Tv.id']);
       table.enum('itemType', ['Movie', 'Tv']);
-    })
+    });
 };
 
-exports.down = function(knex, Promise) {
+exports.down = function (knex, Promise) {
   return knex.schema
     .dropTableIfExists('Movie')
     .dropTableIfExists('Tv')
     .dropTableIfExists('Review')
     .dropTableIfExists('Rating')
     .dropTableIfExists('Watched')
-    .dropTableIfExists('User')
+    .dropTableIfExists('User');
 };

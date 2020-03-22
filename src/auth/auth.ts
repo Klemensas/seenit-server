@@ -10,23 +10,35 @@ import { config } from '../config';
 import { AuthError } from '../errors/authError';
 
 export class Auth {
-  static async comparePasswords(pass1: string | undefined, pass2: string | undefined): Promise<boolean> {
-    if (!pass1 || !pass2) { return false; }
+  static async comparePasswords(
+    pass1: string | undefined,
+    pass2: string | undefined,
+  ): Promise<boolean> {
+    if (!pass1 || !pass2) {
+      return false;
+    }
 
     return bcrypt.compare(pass1, pass2);
   }
 
   static signToken({ id, email }: User) {
-    return jwt.sign({
-      id,
-      email,
-    }, config.secrets.session, {
-      expiresIn: config.sessionLength,
-    });
+    return jwt.sign(
+      {
+        id,
+        email,
+      },
+      config.secrets.session,
+      {
+        expiresIn: config.sessionLength,
+      },
+    );
   }
 
   static isAuthenticated() {
-      return passport.authenticate('bearer', {session: false, failWithError: false});
+    return passport.authenticate('bearer', {
+      session: false,
+      failWithError: false,
+    });
   }
 
   static getUserFromToken(token: string) {
@@ -49,19 +61,29 @@ export class Auth {
    * a user is logged in before asking them to approve the request.
    */
   static useLocalStrategy() {
-    passport.use(new LocalStrategy({
-      usernameField: 'email',
-      passwordField: 'password',
-    }, async (email, password, done) => {
-        const user = await getFullUser({ email });
-        if (!user) { return done('User not found', false); }
+    passport.use(
+      new LocalStrategy(
+        {
+          usernameField: 'email',
+          passwordField: 'password',
+        },
+        async (email, password, done) => {
+          const user = await getFullUser({ email });
+          if (!user) {
+            return done('User not found', false);
+          }
 
-        const authorized = await this.comparePasswords(password, user.password);
-        const cleanUser = { ...user };
-        delete cleanUser.password;
-        delete cleanUser.salt;
-        return authorized ? done(null, cleanUser) : done(null, false);
-    }));
+          const authorized = await this.comparePasswords(
+            password,
+            user.password,
+          );
+          const cleanUser = { ...user };
+          delete cleanUser.password;
+          delete cleanUser.salt;
+          return authorized ? done(null, cleanUser) : done(null, false);
+        },
+      ),
+    );
   }
 
   /**
@@ -73,12 +95,12 @@ export class Auth {
    * the authorizing user.
    */
   static useBearerStrategy() {
-    passport.use(new BearerStrategy((token, done) => this.getUserFromToken(token)
-      .then((user) => done(null, user))
-      .catch((error) => done(new AuthError(error.message), false))
-    ));
+    passport.use(
+      new BearerStrategy((token, done) =>
+        this.getUserFromToken(token)
+          .then((user) => done(null, user))
+          .catch((error) => done(new AuthError(error.message), false)),
+      ),
+    );
   }
 }
-
-
-

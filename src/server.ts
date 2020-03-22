@@ -27,7 +27,7 @@ function setupHttp(app: express.Express) {
 function setupHttps(app: express.Express) {
   const options = {
     key: fs.readFileSync(config.tls.keyPath),
-    cert: fs.readFileSync(config.tls.certPath)
+    cert: fs.readFileSync(config.tls.certPath),
   };
 
   return https.createServer(options, app).listen(config.port);
@@ -54,7 +54,6 @@ export class Server {
     } catch (error) {
       throw new InternalServerError(error.message);
     }
-
   }
 
   private static initializeAuth() {

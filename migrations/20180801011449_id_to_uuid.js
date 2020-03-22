@@ -1,5 +1,4 @@
-
-exports.up = function(knex, Promise) {
+exports.up = function (knex, Promise) {
   return knex.schema
     .alterTable('Rating', (table) => {
       table.dropColumn('id');
@@ -33,60 +32,51 @@ exports.up = function(knex, Promise) {
     })
     .alterTable('Watched', (table) => {
       table.uuid('id').defaultTo(knex.raw('uuid_generate_v4()')).primary();
+      table.uuid('userId').references('id').inTable('User').onDelete('CASCADE');
       table
-        .uuid('userId')
-        .references('id')
-        .inTable('User')
-        .onDelete('CASCADE');
-      table.foreign('itemId')
+        .foreign('itemId')
         .onDelete('CASCADE')
         .references(['Movie.id', 'Tv.id', 'Season.id', 'Episode.id']);
       table.enum('itemType', ['Movie', 'Tv', 'Season', 'Episode']);
     })
     .alterTable('Rating', (table) => {
       table.uuid('id').defaultTo(knex.raw('uuid_generate_v4()')).primary();
+      table.uuid('userId').references('id').inTable('User').onDelete('CASCADE');
       table
-        .uuid('userId')
+        .uuid('watchedId')
         .references('id')
-        .inTable('User')
+        .inTable('Watched')
         .onDelete('CASCADE');
-        table
-          .uuid('watchedId')
-          .references('id')
-          .inTable('Watched')
-          .onDelete('CASCADE');
-        table.uuid('itemId');
-      table.foreign('itemId')
+      table.uuid('itemId');
+      table
+        .foreign('itemId')
         .onDelete('CASCADE')
         .references(['Movie.id', 'Tv.id', 'Season.id', 'Episode.id']);
       table.enum('itemType', ['Movie', 'Tv', 'Season', 'Episode']);
     })
     .alterTable('Review', (table) => {
       table.uuid('id').defaultTo(knex.raw('uuid_generate_v4()')).primary();
+      table.uuid('userId').references('id').inTable('User').onDelete('CASCADE');
       table
-        .uuid('userId')
+        .uuid('watchedId')
         .references('id')
-        .inTable('User')
+        .inTable('Watched')
         .onDelete('CASCADE');
-        table
-          .uuid('watchedId')
-          .references('id')
-          .inTable('Watched')
-          .onDelete('CASCADE');
-        table.uuid('itemId');
-      table.foreign('itemId')
+      table.uuid('itemId');
+      table
+        .foreign('itemId')
         .onDelete('CASCADE')
         .references(['Movie.id', 'Tv.id', 'Season.id', 'Episode.id']);
       table.enum('itemType', ['Movie', 'Tv', 'Season', 'Episode']);
-    })
+    });
 };
 
-exports.down = function(knex, Promise) {
+exports.down = function (knex, Promise) {
   return knex.schema
     .dropTableIfExists('Movie')
     .dropTableIfExists('Tv')
     .dropTableIfExists('Review')
     .dropTableIfExists('Rating')
     .dropTableIfExists('Watched')
-    .dropTableIfExists('User')
+    .dropTableIfExists('User');
 };

@@ -11,7 +11,7 @@ app.get('/export', async (req, res) => {
   res.json({
     count,
     export: dailyExport.exportJob,
-  })
+  });
 });
 
 app.listen(config.port);

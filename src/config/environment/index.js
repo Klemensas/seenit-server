@@ -2,7 +2,7 @@ const path = require('path');
 
 const env = process.env.NODE_ENV || 'development';
 
-module.exports = { 
+module.exports = {
   env,
   ip: process.env.IP || '0.0.0.0',
   port: process.env.PORT || 9000,
@@ -20,11 +20,13 @@ module.exports = {
     options: {
       client: 'postgresql',
       migrations: {
-        tableName: 'knex_migrations'
+        tableName: 'knex_migrations',
       },
     },
   },
-  dbConnection: process.env.DB_CONNECTION || 'postgres://screen:supasecretpassword@localhost:5434/screen',
+  dbConnection:
+    process.env.DB_CONNECTION ||
+    'postgres://screen:supasecretpassword@localhost:5434/screen',
   tvDb: {
     apikey: process.env.TVDB_API_KEY,
     username: process.env.TVDB_USERNAME,

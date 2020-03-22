@@ -7,7 +7,11 @@ import { Review } from './review';
 import { Movie } from './movie';
 import { Tv, TvData } from './tv';
 
-import { getWatched, getWatchedById, createWatchedGraph } from '../queries/watchedQueries';
+import {
+  getWatched,
+  getWatchedById,
+  createWatchedGraph,
+} from '../queries/watchedQueries';
 import { getUserById } from '../queries/userQueries';
 import { getMovieById } from '../queries/movieQueries';
 import { getRatingByWatched } from '../queries/ratingQueries';
@@ -151,13 +155,12 @@ interface AddWatchedPayload {
   rating?: Pick<Rating, 'value'>;
   review?: Pick<Review, 'body'>;
   tvData?: TvData;
-
 }
 
 const itemLoaders = {
   [ItemTypes.Tv]: getTvById,
   [ItemTypes.Movie]: getMovieById,
-}
+};
 
 export const resolvers = {
   Query: {
@@ -178,37 +181,37 @@ export const resolvers = {
         }: AddWatchedPayload,
         { user }: { user: User },
       ) => {
-
-      const { tmdbId } = await itemLoaders[mediaType](itemId);
-
-      const itemData = {
-        itemId,
-        itemType: mediaType,
-        tmdbId,
-      }
-
-      const userId = user.id;
-      const ratingItem = rating ? {
-        ...rating,
-        ...itemData,
-        userId,
-      } : null;
-
-      const reviewItem = review ? {
-        ...review,
-        ...itemData,
-        userId,
-      } : null;
-
-      return createWatchedGraph({
-        ...itemData,
-        userId,
-        tvData,
-        rating: ratingItem,
-        review: reviewItem,
-        createdAt,
-      });
-    }),
+        const { tmdbId } = await itemLoaders[mediaType](itemId);
+        const itemData = {
+          itemId,
+          itemType: mediaType,
+          tmdbId,
+        };
+        const userId = user.id;
+        const ratingItem = rating
+          ? {
+              ...rating,
+              ...itemData,
+              userId,
+            }
+          : null;
+        const reviewItem = review
+          ? {
+              ...review,
+              ...itemData,
+              userId,
+            }
+          : null;
+        return createWatchedGraph({
+          ...itemData,
+          userId,
+          tvData,
+          rating: ratingItem,
+          review: reviewItem,
+          createdAt,
+        });
+      },
+    ),
   },
   Item: {
     __resolveType(obj, context, info) {
@@ -216,7 +219,10 @@ export const resolvers = {
     },
   },
   Watched: {
-    item: (watched, args, { loaders }) => watched.itemType === ItemTypes.Movie ? getMovieById(watched.itemId) : getTvById(watched.itemId),
+    item: (watched, args, { loaders }) =>
+      watched.itemType === ItemTypes.Movie
+        ? getMovieById(watched.itemId)
+        : getTvById(watched.itemId),
     user: (watched, args, { loaders }) => getUserById(watched.userId),
     rating: (watched, args, { loaders }) => getRatingByWatched(watched.id),
     review: (watched, args, { loaders }) => getReviewByWatched(watched.id),
