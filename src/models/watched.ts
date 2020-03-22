@@ -18,6 +18,7 @@ import { getRatingByWatched } from '../queries/ratingQueries';
 import { getReviewByWatched } from '../queries/reviewQueries';
 import { getTvById } from '../queries/tvQueries';
 
+import { omitFalsy } from '../util/helpers';
 import { isAuthenticated } from '../apollo/resolvers';
 
 export const enum ItemTypes {
@@ -160,6 +161,30 @@ interface AddWatchedPayload {
 const itemLoaders = {
   [ItemTypes.Tv]: getTvById,
   [ItemTypes.Movie]: getMovieById,
+};
+
+interface WatchesFilters {
+  userId?: string;
+  itemId?: string;
+  itemType?: ItemTypes;
+}
+
+export const watchedResolver = async (
+  filters: WatchesFilters,
+  cursor: string | number = Date.now(),
+) => {
+  const count = 12;
+
+  const { total, results } = await getWatched(omitFalsy(filters), {
+    count,
+    after: cursor,
+  });
+
+  const lastItem = results[results.length - 1] as any;
+  const newCursor = lastItem ? lastItem.createdAt : undefined;
+  const hasMore = total > count;
+
+  return { watched: results, hasMore, cursor: newCursor };
 };
 
 export const resolvers = {
