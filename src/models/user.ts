@@ -15,7 +15,7 @@ import {
   getFullUser,
 } from '../queries/userQueries';
 import { Auth } from '../auth/auth';
-import { isAuthenticated } from '../apollo/resolvers';
+import { isAuthenticated } from '../apollo/helperResolvers';
 
 export class User extends BaseModel {
   readonly id: string;
@@ -52,7 +52,7 @@ export class User extends BaseModel {
 
   authenticate(password: string) {
     return this.encryptPassword(password).then(
-      (encryptedPass) => this.password === encryptedPass,
+      encryptedPass => this.password === encryptedPass,
     );
   }
 

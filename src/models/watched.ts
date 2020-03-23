@@ -19,7 +19,7 @@ import { getReviewByWatched } from '../queries/reviewQueries';
 import { getTvById } from '../queries/tvQueries';
 
 import { omitFalsy } from '../util/helpers';
-import { isAuthenticated } from '../apollo/resolvers';
+import { isAuthenticated } from '../apollo/helperResolvers';
 
 export const enum ItemTypes {
   'Movie' = 'Movie',
