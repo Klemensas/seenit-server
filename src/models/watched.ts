@@ -106,10 +106,6 @@ export const typeDefs = gql`
     Tv
   }
 
-  enum WatchedFilter {
-    Reviewed
-  }
-
   union Item = Movie | Tv
 
   type Watched {
@@ -128,12 +124,16 @@ export const typeDefs = gql`
   type WatchedCursor {
     watched: [Watched!]!
     cursor: String
-    filter: WatchedFilter
     hasMore: Boolean!
   }
 
   extend type Query {
-    allWatched: [Watched!]
+    watches(
+      userId: ID
+      itemId: ID
+      itemType: ItemType
+      cursor: String
+    ): WatchedCursor!
     watched(id: ID!): Watched!
   }
 
@@ -169,6 +169,10 @@ interface WatchesFilters {
   itemType?: ItemTypes;
 }
 
+interface WatchedArgs extends WatchesFilters {
+  cursor?: string;
+}
+
 export const watchedResolver = async (
   filters: WatchesFilters,
   cursor: string | number = Date.now(),
@@ -189,8 +193,9 @@ export const watchedResolver = async (
 
 export const resolvers = {
   Query: {
-    allWatched: (parent, args, { models }) => getWatched({}),
-    watched: (parent, { id }, { models }) => getWatchedById(id),
+    watches: (parent, { cursor, ...filters }: WatchedArgs) =>
+      watchedResolver(filters, cursor),
+    watched: (parent, { id }) => getWatchedById(id),
   },
   Mutation: {
     addWatched: isAuthenticated.createResolver(
