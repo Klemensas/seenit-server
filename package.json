@@ -26,7 +26,7 @@
     "errorhandler": "^1.5.0",
     "express": "^4.17.1",
     "express-limiter": "^1.6.1",
-    "graphql": "^14.5.8",
+    "graphql": "^14.6.0",
     "jest": "^24.9.0",
     "jsonwebtoken": "^8.3.0",
     "knex": "^0.20.7",
