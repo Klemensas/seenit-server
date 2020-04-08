@@ -11,6 +11,7 @@ import {
   getWatched,
   getWatchedById,
   createWatchedGraph,
+  deleteWatchedById,
 } from '../queries/watchedQueries';
 import { getUserById } from '../queries/userQueries';
 import { getMovieById } from '../queries/movieQueries';
@@ -146,6 +147,7 @@ export const typeDefs = gql`
       tvData: TvDataInput
       createdAt: Float
     ): Watched!
+    removeWatched(itemId: ID!): ID!
   }
 `;
 
@@ -240,6 +242,21 @@ export const resolvers = {
           review: reviewItem,
           createdAt,
         });
+      },
+    ),
+    removeWatched: isAuthenticated.createResolver(
+      async (
+        parent,
+        { itemId }: { itemId: string },
+        { user }: { user: User },
+      ) => {
+        const watched = await getWatchedById(itemId);
+        const isOwner = watched.userId === user.id;
+
+        if (!isOwner) throw 'uh oh';
+
+        await deleteWatchedById(watched.id);
+        return watched.id;
       },
     ),
   },
