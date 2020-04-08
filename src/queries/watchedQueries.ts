@@ -7,10 +7,17 @@ import { Watched } from '../models/watched';
 export const perPage = 12;
 
 export function getWatchedById(
-  id: number,
+  id: string,
   connection: Transaction | Knex = knex,
 ) {
   return Watched.query(connection).findById(id);
+}
+
+export function deleteWatchedById(
+  id: string,
+  connection: Transaction | Knex = knex,
+) {
+  return Watched.query(connection).deleteById(id);
 }
 
 export function getWatched(
