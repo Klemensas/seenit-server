@@ -18,7 +18,8 @@ import { getRatingByWatched } from '../queries/ratingQueries';
 import { getReviewByWatched } from '../queries/reviewQueries';
 import { getTvById } from '../queries/tvQueries';
 
-import { isAuthenticated } from '../apollo/resolvers';
+import { omitFalsy } from '../util/helpers';
+import { isAuthenticated } from '../apollo/helperResolvers';
 
 export const enum ItemTypes {
   'Movie' = 'Movie',
@@ -105,10 +106,6 @@ export const typeDefs = gql`
     Tv
   }
 
-  enum WatchedFilter {
-    Reviewed
-  }
-
   union Item = Movie | Tv
 
   type Watched {
@@ -127,12 +124,16 @@ export const typeDefs = gql`
   type WatchedCursor {
     watched: [Watched!]!
     cursor: String
-    filter: WatchedFilter
     hasMore: Boolean!
   }
 
   extend type Query {
-    allWatched: [Watched!]
+    watches(
+      userId: ID
+      itemId: ID
+      itemType: ItemType
+      cursor: String
+    ): WatchedCursor!
     watched(id: ID!): Watched!
   }
 
@@ -162,10 +163,39 @@ const itemLoaders = {
   [ItemTypes.Movie]: getMovieById,
 };
 
+interface WatchesFilters {
+  userId?: string;
+  itemId?: string;
+  itemType?: ItemTypes;
+}
+
+interface WatchedArgs extends WatchesFilters {
+  cursor?: string;
+}
+
+export const watchedResolver = async (
+  filters: WatchesFilters,
+  cursor: string | number = Date.now(),
+) => {
+  const count = 12;
+
+  const { total, results } = await getWatched(omitFalsy(filters), {
+    count,
+    after: cursor,
+  });
+
+  const lastItem = results[results.length - 1] as any;
+  const newCursor = lastItem ? lastItem.createdAt : undefined;
+  const hasMore = total > count;
+
+  return { watched: results, hasMore, cursor: newCursor };
+};
+
 export const resolvers = {
   Query: {
-    allWatched: (parent, args, { models }) => getWatched({}),
-    watched: (parent, { id }, { models }) => getWatchedById(id),
+    watches: (parent, { cursor, ...filters }: WatchedArgs) =>
+      watchedResolver(filters, cursor),
+    watched: (parent, { id }) => getWatchedById(id),
   },
   Mutation: {
     addWatched: isAuthenticated.createResolver(

@@ -1,17 +1,6 @@
-import { createResolver } from 'apollo-resolvers';
-import { AuthenticationError } from 'apollo-server-express';
-
 import { Tv } from '../models/tv';
 import { Movie } from '../models/movie';
 import { knex } from '../config';
-
-export const isAuthenticated = createResolver(
-  (parent, args, { user }, info) => {
-    if (!user) {
-      throw new AuthenticationError('Authentication required.');
-    }
-  },
-);
 
 export const serviceResolvers = {
   Query: {
@@ -68,10 +57,10 @@ export const serviceResolvers = {
           .limit(20)
           // .omit(['score', 'popularity'])
           .debug()
-          .then((r) => {
+          .then(r => {
             return r;
           })
-          .catch((err) => {
+          .catch(err => {
             console.log('eeererere', err);
             throw err;
           })
