@@ -12,6 +12,7 @@ import {
   getWatchedById,
   createWatchedGraph,
   deleteWatchedById,
+  upsertWatchedGraph,
 } from '../queries/watchedQueries';
 import { getUserById } from '../queries/userQueries';
 import { getMovieById } from '../queries/movieQueries';
@@ -122,6 +123,7 @@ export const typeDefs = gql`
     review: Review
     tvData: TvData
   }
+
   type WatchedCursor {
     watched: [Watched!]!
     cursor: String
@@ -146,6 +148,12 @@ export const typeDefs = gql`
       review: ReviewInput
       tvData: TvDataInput
       createdAt: Float
+    ): Watched!
+    editWatched(
+      id: ID!
+      createdAt: Float
+      rating: RatingInput
+      review: ReviewInput
     ): Watched!
     removeWatched(itemId: ID!): ID!
   }
@@ -192,6 +200,13 @@ export const watchedResolver = async (
 
   return { watched: results, hasMore, cursor: newCursor };
 };
+
+interface EditWatched {
+  id: string;
+  createdAt: number;
+  review?: Pick<Review, 'body'> & { id?: string };
+  rating?: Pick<Rating, 'value'> & { id?: string };
+}
 
 export const resolvers = {
   Query: {
@@ -241,6 +256,39 @@ export const resolvers = {
           rating: ratingItem,
           review: reviewItem,
           createdAt,
+        });
+      },
+    ),
+    editWatched: isAuthenticated.createResolver(
+      async (
+        parent,
+        { id, createdAt, review, rating }: EditWatched,
+        { user }: { user: User },
+      ) => {
+        const originalWatched = await getWatchedById(id).withGraphFetched(
+          '[review, rating]',
+        );
+        const isOwner = originalWatched.userId === user.id;
+
+        if (!isOwner) throw 'uh oh';
+
+        return upsertWatchedGraph({
+          id,
+          createdAt,
+          review: review
+            ? {
+                itemId: originalWatched.itemId,
+                userId: originalWatched.userId,
+                ...review,
+              }
+            : null,
+          rating: rating
+            ? {
+                itemId: originalWatched.itemId,
+                userId: originalWatched.userId,
+                ...rating,
+              }
+            : null,
         });
       },
     ),
