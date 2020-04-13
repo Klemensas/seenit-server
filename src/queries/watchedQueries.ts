@@ -28,7 +28,6 @@ export function getWatched(
   },
   connection: Transaction | Knex = knex,
 ) {
-  console.error('this throws?', where);
   return (
     Watched.query(connection)
       .where(where)
@@ -68,7 +67,16 @@ export function createWatchedGraph(
   watched: Partial<Watched>,
   connection: Transaction | Knex = knex,
 ) {
-  return Watched.query(connection).insertGraph(watched, {
-    relate: true,
-  });
+  return Watched.query(connection)
+    .allowGraph('[review, rating]')
+    .insertGraph(watched);
+}
+
+export function upsertWatchedGraph(
+  watched: Partial<Watched>,
+  connection: Transaction | Knex = knex,
+) {
+  return Watched.query(connection)
+    .allowGraph('[review, rating]')
+    .upsertGraphAndFetch(watched);
 }
