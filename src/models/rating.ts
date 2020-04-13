@@ -84,6 +84,7 @@ export const typeDefs = gql`
   }
 
   input RatingInput {
+    id: ID
     value: Float!
   }
 `;
