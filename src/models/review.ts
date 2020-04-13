@@ -56,7 +56,7 @@ export class Review extends BaseModel {
     required: ['body', 'itemId', 'userId'],
 
     properties: {
-      id: { type: 'integer' },
+      id: { type: 'string' },
       body: { type: 'string' },
       tmdbId: { type: 'integer' },
       itemId: { type: 'string' },
@@ -78,6 +78,7 @@ export const typeDefs = gql`
   }
 
   input ReviewInput {
+    id: ID
     body: String!
   }
 `;
