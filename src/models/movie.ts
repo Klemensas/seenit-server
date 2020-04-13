@@ -175,7 +175,7 @@ export const typeDefs = gql`
   }
 
   extend type Query {
-    movie(id: ID): Movie
+    movie(id: ID): Movie!
   }
 `;
 
