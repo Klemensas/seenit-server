@@ -7,7 +7,6 @@ import {
 } from 'apollo-server-express';
 
 import { BaseModel } from './baseModel';
-import { getWatched } from '../queries/watchedQueries';
 import {
   getUsers,
   getUser,
@@ -53,7 +52,7 @@ export class User extends BaseModel {
 
   authenticate(password: string) {
     return this.encryptPassword(password).then(
-      encryptedPass => this.password === encryptedPass,
+      (encryptedPass) => this.password === encryptedPass,
     );
   }
 
@@ -66,7 +65,7 @@ export class User extends BaseModel {
   }
 
   generateSalt(rounds = 10) {
-    return bcrypt.genSalt(10);
+    return bcrypt.genSalt(rounds);
   }
 
   async updatePassword(): Promise<void> {
@@ -119,15 +118,13 @@ export const typeDefs = gql`
 
 export const resolvers = {
   Query: {
-    users: isAuthenticated.createResolver((parent, args, { models }) =>
-      getUsers({}),
-    ),
-    user: (parent, { id, name }, { models }) => {
+    users: isAuthenticated.createResolver(() => getUsers({})),
+    user: (parent, { id, name }) => {
       return getUser(name ? { name } : { id });
     },
   },
   Mutation: {
-    register: async (parent, { name, email, password }, { models }) => {
+    register: async (parent, { name, email, password }) => {
       const user = await createUser({
         name,
         email,
@@ -136,7 +133,7 @@ export const resolvers = {
 
       return { token: Auth.signToken(user) };
     },
-    login: async (parent, { email, password }, { models }) => {
+    login: async (parent, { email, password }) => {
       const user = await getFullUser({ email });
 
       if (!user) {
@@ -156,7 +153,7 @@ export const resolvers = {
     },
   },
   User: {
-    watched: async (user, { cursor, filter }, { loaders }) => {
+    watched: async (user, { cursor }) => {
       return watchedResolver({ userId: user.id }, cursor);
     },
   },

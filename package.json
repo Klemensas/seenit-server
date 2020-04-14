@@ -10,7 +10,7 @@
     "migrate:latest": "knex migrate:latest",
     "migrate:rollback": "knex migrate:rollback",
     "tsc": "tsc",
-    "lint": "eslint ."
+    "lint": "eslint . --ext .js,.ts"
   },
   "dependencies": {
     "apollo-resolvers": "^1.4.2",

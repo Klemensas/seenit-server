@@ -72,7 +72,7 @@ export const typeDefs = gql`
 
 export const resolvers = {
   Query: {
-    season: (parent, { id }, { models }) => {
+    season: (parent, { id }) => {
       try {
         const season = getSeasonById(id);
 
@@ -83,7 +83,7 @@ export const resolvers = {
     },
   },
   Season: {
-    episodes: async (season: Season, args, { loaders }) => {
+    episodes: async (season: Season) => {
       const t0 = performance.now();
       const seasonEpisodes = await getEpisodesBySeasonId(season.id);
       const t1 = performance.now();

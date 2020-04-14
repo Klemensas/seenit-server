@@ -181,10 +181,10 @@ export const typeDefs = gql`
 
 export const resolvers = {
   Query: {
-    movie: (parent, { id }, { models }) => getMovieById(id),
+    movie: (parent, { id }) => getMovieById(id),
   },
   Movie: {
-    watched: async (movie, { cursor, filter }, { loaders }) => {
+    watched: async (movie, { cursor, filter }) => {
       const count = 12;
       const query = filter ? getWatchedWithReviews : getWatched;
       cursor = cursor || Date.now();

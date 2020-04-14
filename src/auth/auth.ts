@@ -13,7 +13,7 @@ export class Auth {
   static async comparePasswords(
     pass1: string | undefined,
     pass2: string | undefined,
-  ): Promise<boolean> {
+  ) {
     if (!pass1 || !pass2) {
       return false;
     }
@@ -41,16 +41,10 @@ export class Auth {
     });
   }
 
-  static getUserFromToken(token: string) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const tokenData = jwt.verify(token, config.secrets.session) as any;
-        const user = await getUserById(tokenData.id);
-        return resolve(user);
-      } catch (err) {
-        reject(err);
-      }
-    });
+  static async getUserFromToken(token: string) {
+    const tokenData = jwt.verify(token, config.secrets.session) as any;
+    const user = await getUserById(tokenData.id);
+    return user;
   }
 
   /**

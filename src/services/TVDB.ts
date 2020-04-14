@@ -19,7 +19,7 @@ export class TVDB {
     baseURL: 'https://api.thetvdb.com/',
     timeout: 3000,
   });
-  private refreshTimer: any;
+  private refreshTimer: NodeJS.Timeout;
 
   constructor(
     private credentials: TvDbCredentials,

@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import * as limiter from 'express-limiter';
 
 export class BaseRouter {
   public router: Router;

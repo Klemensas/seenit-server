@@ -104,10 +104,10 @@ export class DailyExports {
     );
     await Promise.all([
       new Promise((resolve) =>
-        fs.unlink(DailyExports.filePath.movie, (err) => resolve()),
+        fs.unlink(DailyExports.filePath.movie, () => resolve()),
       ),
       new Promise((resolve) =>
-        fs.unlink(DailyExports.filePath.tv, (err) => resolve()),
+        fs.unlink(DailyExports.filePath.tv, () => resolve()),
       ),
     ]);
     this.isRunning = false;
@@ -177,7 +177,7 @@ export class DailyExports {
           `${err.toString()}-${
             err.response ? JSON.stringify(err.response.headers) : ''
           }-${remainingRequests}`,
-          (error) => {
+          () => {
             process.exit(1);
           },
         );

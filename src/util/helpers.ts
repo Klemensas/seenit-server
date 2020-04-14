@@ -1,6 +1,3 @@
-export const omitFalsy = <T extends {}>(object: T) =>
-  omitBy(object, (property) => !!property);
-
 export const omitBy = <T extends {}>(
   object: T,
   filterFn: (property: T[keyof T]) => boolean,
@@ -10,3 +7,6 @@ export const omitBy = <T extends {}>(
       filterFn(value) ? { ...acc, [key]: value } : acc,
     {},
   );
+
+export const omitFalsy = <T extends {}>(object: T) =>
+  omitBy(object, (property) => !!property);

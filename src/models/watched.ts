@@ -309,17 +309,17 @@ export const resolvers = {
     ),
   },
   Item: {
-    __resolveType(obj, context, info) {
+    __resolveType(obj) {
       return obj.constructor.name;
     },
   },
   Watched: {
-    item: (watched, args, { loaders }) =>
+    item: (watched) =>
       watched.itemType === ItemTypes.Movie
         ? getMovieById(watched.itemId)
         : getTvById(watched.itemId),
-    user: (watched, args, { loaders }) => getUserById(watched.userId),
-    rating: (watched, args, { loaders }) => getRatingByWatched(watched.id),
-    review: (watched, args, { loaders }) => getReviewByWatched(watched.id),
+    user: (watched) => getUserById(watched.userId),
+    rating: (watched) => getRatingByWatched(watched.id),
+    review: (watched) => getReviewByWatched(watched.id),
   },
 };
