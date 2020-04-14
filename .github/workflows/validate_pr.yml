@@ -1,0 +1,23 @@
+name: PR CI
+
+on: pull_request
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 13
+      - run: npm ci
+      - run: npm run lint
+  ts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 13
+      - run: npm ci
+      - run: npm run tsc
