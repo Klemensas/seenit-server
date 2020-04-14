@@ -13,6 +13,13 @@ export function getUserById(
     .select('id', 'name', 'email', 'createdAt', 'updatedAt');
 }
 
+export function getFullUser(
+  where: Partial<User>,
+  connection: Transaction | Knex = knex,
+) {
+  return User.query(connection).findOne(where);
+}
+
 export function getUser(
   where: Partial<User>,
   connection: Transaction | Knex = knex,
@@ -24,13 +31,6 @@ export function getUser(
     'createdAt',
     'updatedAt',
   );
-}
-
-export function getFullUser(
-  where: Partial<User>,
-  connection: Transaction | Knex = knex,
-) {
-  return User.query(connection).findOne(where);
 }
 
 export function getUsers(

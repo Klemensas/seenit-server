@@ -51,6 +51,154 @@ export async function loadEpisodeData() {
   await Tv.query(knex).upsertGraph(group, { noDelete: true });
 }
 
+async function getPage(path: ExportPaths, from: string, to: string, page = 1) {
+  const { data } = await TMDB.get(path, {
+    params: {
+      page,
+      start_date: from,
+      end_date: to,
+    },
+  });
+
+  let items = [];
+  if (data.total_pages !== data.page) {
+    items = await getPage(path, from, to, page + 1);
+  }
+  return data.results.concat(items);
+}
+
+async function updateMovieItems(
+  items: Movie[],
+  updates: { items: TmdbMovie[]; deletedIds: number[] },
+  connection = knex,
+) {
+  const formattedItems = updates.items.map(({ id, ...item }) => ({
+    ...items.find(({ tmdbId }) => tmdbId === id),
+    ...item,
+    tmdbId: id,
+  }));
+
+  await Promise.all([
+    Movie.query(connection).upsertGraph(formattedItems, {
+      noDelete: true,
+    }),
+    Movie.query(connection).whereIn('tmdbId', updates.deletedIds).del(),
+  ]);
+
+  return formattedItems;
+}
+
+export function formatTvEpisodes(
+  episodeData: TmdbEpisode[],
+  currentData: Episode[],
+) {
+  return episodeData.map(
+    ({ id: tmdbId, air_date, show_id, season_number, ...episode }) => {
+      const storedEpisode = currentData.find(
+        ({ tmdbId: existingTmdbId }) => existingTmdbId === tmdbId,
+      );
+
+      return {
+        ...storedEpisode,
+        tmdbId,
+        air_date: +new Date(air_date) || null,
+        ...episode,
+      };
+    },
+  );
+}
+
+export function formatTvSeasons(
+  seasonData: TmdbSeason[],
+  currentData: Season[],
+) {
+  return seasonData.map(
+    ({ id: tmdbId, _id, episodes, air_date, ...season }: any) => {
+      const storedSeason = currentData.find(
+        ({ tmdbId: existingTmdbId }) => existingTmdbId === tmdbId,
+      );
+
+      return {
+        ...storedSeason,
+        tmdbId,
+        air_date: +new Date(air_date) || null,
+        episodes: episodes
+          ? formatTvEpisodes(
+              episodes,
+              storedSeason ? storedSeason.episodes : [],
+            )
+          : [],
+        ...season,
+      };
+    },
+  );
+}
+
+export function formatTvItems(items: Tv[], changes: TV[]) {
+  return changes.map(({ id, ...item }) => {
+    const storedItem = items.find(({ tmdbId }) => tmdbId === id);
+    const newItem: any = {
+      ...storedItem,
+      ...item,
+      tmdbId: id,
+      seasons: formatTvSeasons(
+        item.seasons,
+        storedItem ? storedItem.seasons : [],
+      ),
+    };
+
+    return newItem;
+  });
+}
+
+async function updateTvItems(
+  items: Tv[],
+  updates: { items: TV[]; deletedIds: number[] },
+  connection = knex,
+) {
+  const formattedItems = formatTvItems(items, updates.items);
+
+  await Promise.all([
+    Tv.query(connection).upsertGraph(formattedItems, {
+      noDelete: true,
+    }),
+    Tv.query(connection).whereIn('tmdbId', updates.deletedIds).del(),
+  ]);
+
+  return formattedItems;
+}
+
+async function loadItemsSync(ids: number[], type: MediaType) {
+  const list = [...ids];
+  const deletedIds = [];
+  const items = [];
+
+  while (list.length) {
+    const {
+      data,
+      id,
+      remainingLimit,
+      nextBatch,
+    } = await DailyExports.fetchItemWithDeletion(list.shift(), type);
+    if (data) {
+      items.push(data);
+    } else {
+      deletedIds.push(id);
+    }
+
+    if (!remainingLimit) {
+      await new Promise((resolve) =>
+        setTimeout(
+          resolve,
+          (nextBatch - Math.floor(Date.now() / 1000)) * 1000 + 1000,
+        ),
+      );
+    }
+  }
+
+  return { items, deletedIds };
+}
+
 export async function getRangeChanges(
   type: MediaType,
   from: Date,
@@ -121,159 +269,6 @@ export async function getRangeChanges(
     })),
   );
   console.log('rip in pieces');
-}
-
-async function updateMovieItems(
-  items: Movie[],
-  updates: { items: TmdbMovie[]; deletedIds: number[] },
-  connection = knex,
-) {
-  const formattedItems = updates.items.map(({ id, ...item }) => ({
-    ...items.find(({ tmdbId }) => tmdbId === id),
-    ...item,
-    tmdbId: id,
-  }));
-
-  await Promise.all([
-    Movie.query(connection).upsertGraph(formattedItems, {
-      noDelete: true,
-    }),
-    Movie.query(connection).whereIn('tmdbId', updates.deletedIds).del(),
-  ]);
-
-  return formattedItems;
-}
-
-async function updateTvItems(
-  items: Tv[],
-  updates: { items: TV[]; deletedIds: number[] },
-  connection = knex,
-) {
-  const formattedItems = formatTvItems(items, updates.items);
-
-  await Promise.all([
-    Tv.query(connection).upsertGraph(formattedItems, {
-      noDelete: true,
-    }),
-    Tv.query(connection).whereIn('tmdbId', updates.deletedIds).del(),
-  ]);
-
-  return formattedItems;
-}
-
-export function formatTvItems(items: Tv[], changes: TV[]) {
-  return changes.map(({ id, ...item }) => {
-    const storedItem = items.find(({ tmdbId }) => tmdbId === id);
-    const newItem: any = {
-      ...storedItem,
-      ...item,
-      tmdbId: id,
-      seasons: formatTvSeasons(
-        item.seasons,
-        storedItem ? storedItem.seasons : [],
-      ),
-    };
-
-    return newItem;
-  });
-}
-
-export function formatTvSeasons(
-  seasonData: TmdbSeason[],
-  currentData: Season[],
-) {
-  return seasonData.map(
-    ({ id: tmdbId, _id, episodes, air_date, ...season }: any) => {
-      const storedSeason = currentData.find(
-        ({ tmdbId: existingTmdbId }) => existingTmdbId === tmdbId,
-      );
-
-      return {
-        ...storedSeason,
-        tmdbId,
-        air_date: +new Date(air_date) || null,
-        episodes: episodes
-          ? formatTvEpisodes(
-              episodes,
-              storedSeason ? storedSeason.episodes : [],
-            )
-          : [],
-        ...season,
-      };
-    },
-  );
-}
-
-export function formatTvEpisodes(
-  episodeData: TmdbEpisode[],
-  currentData: Episode[],
-) {
-  return episodeData.map(
-    ({ id: tmdbId, air_date, show_id, season_number, ...episode }) => {
-      const storedEpisode = currentData.find(
-        ({ tmdbId: existingTmdbId }) => existingTmdbId === tmdbId,
-      );
-
-      return {
-        ...storedEpisode,
-        tmdbId,
-        air_date: +new Date(air_date) || null,
-        ...episode,
-      };
-    },
-  );
-}
-
-async function getPage(
-  path: ExportPaths,
-  from: string,
-  to: string,
-  page: number = 1,
-) {
-  const { data } = await TMDB.get(path, {
-    params: {
-      page,
-      start_date: from,
-      end_date: to,
-    },
-  });
-
-  let items = [];
-  if (data.total_pages !== data.page) {
-    items = await getPage(path, from, to, page + 1);
-  }
-  return data.results.concat(items);
-}
-
-async function loadItemsSync(ids: number[], type: MediaType) {
-  const list = [...ids];
-  const deletedIds = [];
-  const items = [];
-
-  while (list.length) {
-    const {
-      data,
-      id,
-      remainingLimit,
-      nextBatch,
-    } = await DailyExports.fetchItemWithDeletion(list.shift(), type);
-    if (data) {
-      items.push(data);
-    } else {
-      deletedIds.push(id);
-    }
-
-    if (!remainingLimit) {
-      await new Promise((resolve) =>
-        setTimeout(
-          resolve,
-          (nextBatch - Math.floor(Date.now() / 1000)) * 1000 + 1000,
-        ),
-      );
-    }
-  }
-
-  return { items, deletedIds };
 }
 
 export async function storeChanges() {

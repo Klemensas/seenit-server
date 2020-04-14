@@ -26,7 +26,7 @@ export class UserRouter extends BaseRouter {
     }
   }
 
-  public getCurrentUser(req: Request, res: Response, next: NextFunction) {
+  public getCurrentUser(req: Request, res: Response) {
     res.json(req.user);
   }
 

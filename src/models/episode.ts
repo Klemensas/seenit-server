@@ -67,7 +67,7 @@ export const typeDefs = gql`
 
 export const resolvers = {
   Query: {
-    episode: (parent, { id }, { models }) => {
+    episode: (parent, { id }) => {
       console.log('episode', id);
       try {
         const t0 = performance.now();

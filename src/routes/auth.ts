@@ -11,7 +11,7 @@ export class AuthRouter extends BaseRouter {
 
   private buildRoutes() {
     this.router.post('/', (req, res, next) =>
-      passport.authenticate('local', (err, user, info) => {
+      passport.authenticate('local', (err, user) => {
         if (err || !user) {
           return res
             .status(401)

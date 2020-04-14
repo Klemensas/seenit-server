@@ -1,6 +1,17 @@
 import tmdbService, { TMDB } from '../../src/services/TMDB';
 import { tvIds } from './tmdbIds';
 
+async function loadBatch(list: any[], batchSize, tmDb: TMDB) {
+  const batch = list.slice(0, batchSize);
+  const batchResults = await Promise.all(
+    batch.map((id) => tmDb.get('tv/' + id)),
+  );
+  const headers = batchResults[batchResults.length - 1].headers;
+  const items = batchResults.map(({ data }) => data);
+  list.splice(0, batchSize);
+  return { items, headers };
+}
+
 async function loadList(list = tvIds, tmDb: TMDB = tmdbService) {
   let loadedItems = [];
   try {
@@ -11,7 +22,7 @@ async function loadList(list = tvIds, tmDb: TMDB = tmdbService) {
     let remainingRequests = result.headers['x-ratelimit-remaining'];
     // let nextBatch = result.headers['x-ratelimit-reset'];
     while (list.length) {
-      const { items, headers } = await loadBatch(list, remainingRequests);
+      const { items, headers } = await loadBatch(list, remainingRequests, tmDb);
       loadedItems = loadedItems.concat(items);
       const nextBatch = headers['x-ratelimit-reset'];
       await new Promise((resolve) =>
@@ -28,16 +39,5 @@ async function loadList(list = tvIds, tmDb: TMDB = tmdbService) {
   } catch (err) {
     console.log('err', err);
     throw err;
-  }
-
-  async function loadBatch(list: any[], batchSize) {
-    const batch = list.slice(0, batchSize);
-    const batchResults = await Promise.all(
-      batch.map((id) => tmDb.get('tv/' + id)),
-    );
-    const headers = batchResults[batchResults.length - 1].headers;
-    const items = batchResults.map(({ data }) => data);
-    list.splice(0, batchSize);
-    return { items, headers };
   }
 }

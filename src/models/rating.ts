@@ -4,7 +4,7 @@ import { BaseModel } from './baseModel';
 import { User } from './user';
 import { Watched, ItemTypes } from './watched';
 import { Movie } from './movie';
-import { Tv, TvData } from './tv';
+import { Tv } from './tv';
 import { Season } from './season';
 import { Episode } from './episode';
 

@@ -1,5 +1,5 @@
 import * as Knex from 'knex';
-import { Transaction, QueryBuilder, Page } from 'objection';
+import { Transaction } from 'objection';
 
 import { knex } from '../config';
 import { Watched } from '../models/watched';
