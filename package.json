@@ -37,7 +37,7 @@
     "passport-http-bearer": "^1.0.1",
     "passport-local": "^1.0.0",
     "pg": "^7.17.1",
-    "rimraf": "^3.0.0"
+    "rimraf": "^3.0.2"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
