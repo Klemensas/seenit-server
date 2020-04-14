@@ -1,4 +1,4 @@
-exports.up = function (knex, Promise) {
+exports.up = function (knex) {
   return knex.schema
     .alterTable('Episode', (table) => {
       table.index(['seasonId'], 'seasonIdIndex', 'HASH');
@@ -8,7 +8,7 @@ exports.up = function (knex, Promise) {
     });
 };
 
-exports.down = function (knex, Promise) {
+exports.down = function (knex) {
   return knex.schema
     .alterTable('Episode', (table) => {
       table.dropIndex(['seasonId'], 'seasonIdIndex');

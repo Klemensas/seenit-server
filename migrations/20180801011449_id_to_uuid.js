@@ -1,4 +1,4 @@
-exports.up = function (knex, Promise) {
+exports.up = function (knex) {
   return knex.schema
     .alterTable('Rating', (table) => {
       table.dropColumn('id');
@@ -71,7 +71,7 @@ exports.up = function (knex, Promise) {
     });
 };
 
-exports.down = function (knex, Promise) {
+exports.down = function (knex) {
   return knex.schema
     .dropTableIfExists('Movie')
     .dropTableIfExists('Tv')

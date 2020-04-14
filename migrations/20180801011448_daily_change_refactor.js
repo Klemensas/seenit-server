@@ -1,4 +1,4 @@
-exports.up = function (knex, Promise) {
+exports.up = function (knex) {
   return knex.schema.alterTable('DailyChanges', (table) => {
     table.integer('batch');
     table.specificType('changes', 'jsonb');
@@ -9,6 +9,6 @@ exports.up = function (knex, Promise) {
   });
 };
 
-exports.down = function (knex, Promise) {
+exports.down = function (knex) {
   return knex.schema.dropTableIfExists('DailyChanges');
 };

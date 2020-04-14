@@ -1,4 +1,4 @@
-exports.up = function (knex, Promise) {
+exports.up = function (knex) {
   return knex.schema
     .alterTable('Watched', (table) => {
       table.integer('tmdbId').nullable().alter();
@@ -14,7 +14,7 @@ exports.up = function (knex, Promise) {
     });
 };
 
-exports.down = function (knex, Promise) {
+exports.down = function (knex) {
   return knex.schema
     .alterTable('Watched', (table) => {
       table.integer('tmdbId').notNullable().alter();

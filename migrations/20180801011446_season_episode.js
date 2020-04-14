@@ -1,4 +1,4 @@
-exports.up = function (knex, Promise) {
+exports.up = function (knex) {
   return knex.schema
     .createTable('Season', (table) => {
       table.uuid('id').defaultTo(knex.raw('uuid_generate_v4()')).primary();
@@ -36,6 +36,6 @@ exports.up = function (knex, Promise) {
     });
 };
 
-exports.down = function (knex, Promise) {
+exports.down = function (knex) {
   return knex.schema.dropTableIfExists('Episode').dropTableIfExists('Season');
 };
