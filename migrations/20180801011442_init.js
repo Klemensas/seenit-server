@@ -1,4 +1,4 @@
-exports.up = function (knex, Promise) {
+exports.up = function (knex) {
   return knex.schema
     .createTable('User', (table) => {
       table.increments('id').primary();
@@ -145,7 +145,7 @@ exports.up = function (knex, Promise) {
     });
 };
 
-exports.down = function (knex, Promise) {
+exports.down = function (knex) {
   return knex.schema
     .dropTableIfExists('Movie')
     .dropTableIfExists('Tv')

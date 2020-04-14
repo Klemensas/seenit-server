@@ -1,3 +1,5 @@
+// TODO: Disabled for knex migration runner support, investigate possibility to reenable
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const path = require('path');
 
 const env = process.env.NODE_ENV || 'development';
@@ -24,8 +26,7 @@ module.exports = {
       },
     },
   },
-  dbConnection:
-    process.env.DB_CONNECTION ||
+  dbConnection: process.env.DB_CONNECTION ||
     'postgres://screen:supasecretpassword@localhost:5434/screen',
   tvDb: {
     apikey: process.env.TVDB_API_KEY,

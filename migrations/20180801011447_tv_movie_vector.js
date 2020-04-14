@@ -1,4 +1,4 @@
-exports.up = function (knex, Promise) {
+exports.up = function (knex) {
   return knex.schema
     .alterTable('Movie', (table) => {
       table.specificType('titleVector', 'tsvector');
@@ -10,7 +10,7 @@ exports.up = function (knex, Promise) {
     });
 };
 
-exports.down = function (knex, Promise) {
+exports.down = function (knex) {
   return knex.schema
     .alterTable('Movie', (table) => {
       table.dropColumn('titleVector');
