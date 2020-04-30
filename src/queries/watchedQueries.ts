@@ -3,8 +3,7 @@ import { Transaction } from 'objection';
 
 import { knex } from '../config';
 import { Watched } from '../models/watched';
-
-export const perPage = 12;
+import { perPage } from '../config/constants';
 
 export function getWatchedById(
   id: string,
@@ -20,7 +19,7 @@ export function deleteWatchedById(
   return Watched.query(connection).deleteById(id);
 }
 
-export function getWatched(
+export function getPaginatedWatched(
   where: Partial<Watched>,
   pagination: { count: number; after: string | number } = {
     count: perPage,
@@ -46,7 +45,7 @@ export async function getWatchedWithReviews(
   },
   connection: Transaction | Knex = knex,
 ) {
-  return getWatched(
+  return getPaginatedWatched(
     Object.entries(where).reduce(
       (acc, [key, value]) => ({ ...acc, [`Watched.${key}`]: value }),
       {},

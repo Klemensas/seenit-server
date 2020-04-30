@@ -2,11 +2,12 @@ import { gql } from 'apollo-server-express';
 
 import { BaseModel } from './baseModel';
 import { User } from './user';
-import { Watched, ItemTypes, TvItemTypes } from './watched';
+import { Watched } from './watched';
 import { Movie } from './movie';
 import { Tv } from './tv';
 import { Season } from './season';
 import { Episode } from './episode';
+import { ItemTypes, TvItemTypes } from '../util/watchedItemHelper';
 
 // TODO: validation and better definitino for max val
 export const maxRatingValue = 5;

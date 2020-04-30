@@ -25,6 +25,7 @@ import {
 } from '../models/episode';
 import { typeDefs as ratingTypeDefs } from '../models/rating';
 import { typeDefs as reviewTypeDefs } from '../models/review';
+import reviewResolvers from '../models/review/resolvers';
 import { Auth } from '../auth/auth';
 import { baseType, serviceTypeDefs } from './typeDefs';
 import { serviceResolvers } from './resolvers';
@@ -54,6 +55,7 @@ export function initializeApolloServer(app: express.Express) {
       tvResolvers,
       seasonResolvers,
       episodeResolvers,
+      reviewResolvers,
     ),
     context: async ({ req, res }) => {
       if (req) {

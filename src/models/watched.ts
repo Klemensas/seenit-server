@@ -8,7 +8,7 @@ import { Movie } from './movie';
 import { Tv } from './tv';
 
 import {
-  getWatched,
+  getPaginatedWatched,
   getWatchedById,
   createWatchedGraph,
   deleteWatchedById,
@@ -20,20 +20,17 @@ import { getRatingByWatched } from '../queries/ratingQueries';
 import { getReviewByWatched } from '../queries/reviewQueries';
 import { getTvById } from '../queries/tvQueries';
 
-import { omitFalsy } from '../util/helpers';
 import { isAuthenticated } from '../apollo/helperResolvers';
 import { Episode } from './episode';
 import { Season } from './season';
-
-export const enum ItemTypes {
-  'Movie' = 'Movie',
-  'Tv' = 'Tv',
-}
-
-export const enum TvItemTypes {
-  'Season' = 'Season',
-  'Episode' = 'Episode',
-}
+import { getSeasonById } from '../queries/seasonQueries';
+import { getEpisodeById } from '../queries/episodeQueries';
+import {
+  ItemTypes,
+  TvItemTypes,
+  WatchedItemListArgs,
+  cursorListResolver,
+} from '../util/watchedItemHelper';
 
 export class Watched extends BaseModel {
   readonly id: string;
@@ -167,9 +164,9 @@ export const typeDefs = gql`
       userId: ID
       itemId: ID
       itemType: ItemType
-      cursor: String
       tvItemId: ID
       tvItemType: TvItemType
+      cursor: String
     ): WatchedCursor!
     watched(id: ID!): Watched!
   }
@@ -177,7 +174,7 @@ export const typeDefs = gql`
   extend type Mutation {
     addWatched(
       itemId: ID!
-      mediaType: TmdbMediaType!
+      itemType: ItemType!
       rating: RatingInput
       review: ReviewInput
       createdAt: Float
@@ -189,6 +186,8 @@ export const typeDefs = gql`
       createdAt: Float
       rating: RatingInput
       review: ReviewInput
+      tvItemId: ID
+      tvItemType: TvItemType
     ): Watched!
     removeWatched(itemId: ID!): ID!
   }
@@ -196,7 +195,7 @@ export const typeDefs = gql`
 
 interface AddWatchedPayload {
   itemId: string;
-  mediaType: ItemTypes;
+  itemType: ItemTypes;
   createdAt: number;
   rating?: Pick<Rating, 'value'>;
   review?: Pick<Review, 'body'>;
@@ -209,46 +208,20 @@ const itemLoaders = {
   [ItemTypes.Movie]: getMovieById,
 };
 
-interface WatchesFilters {
-  userId?: string;
-  itemId?: string;
-  itemType?: ItemTypes;
-  tvItemId?: string;
-  tvItemType?: TvItemTypes;
-}
-
-interface WatchedArgs extends WatchesFilters {
-  cursor?: string;
-}
-
-export const watchedResolver = async (
-  filters: WatchesFilters,
-  cursor: string | number = Date.now(),
-) => {
-  const count = 12;
-
-  const { total, results } = await getWatched(omitFalsy(filters), {
-    count,
-    after: cursor,
-  });
-
-  const lastItem = results[results.length - 1];
-  const newCursor = lastItem?.createdAt;
-  const hasMore = total > count;
-
-  return { watched: results, hasMore, cursor: newCursor };
-};
+export const watchedResolver = cursorListResolver(getPaginatedWatched);
 
 interface EditWatched {
   id: string;
   createdAt: number;
   review?: Pick<Review, 'body'> & { id?: string };
   rating?: Pick<Rating, 'value'> & { id?: string };
+  tvItemId?: string;
+  tvItemType?: TvItemTypes;
 }
 
 export const resolvers = {
   Query: {
-    watches: (parent, { cursor, ...filters }: WatchedArgs) =>
+    watches: (parent, { cursor, ...filters }: WatchedItemListArgs) =>
       watchedResolver(filters, cursor),
     watched: (parent, { id }) => getWatchedById(id),
   },
@@ -258,7 +231,7 @@ export const resolvers = {
         parent,
         {
           itemId,
-          mediaType,
+          itemType,
           rating,
           review,
           createdAt,
@@ -267,10 +240,10 @@ export const resolvers = {
         }: AddWatchedPayload,
         { user }: { user: User },
       ) => {
-        const { tmdbId } = await itemLoaders[mediaType](itemId);
+        const { tmdbId } = await itemLoaders[itemType](itemId);
         const itemData = {
           itemId,
-          itemType: mediaType,
+          itemType: itemType,
           tmdbId,
           tvItemId,
           tvItemType,
@@ -302,7 +275,7 @@ export const resolvers = {
     editWatched: isAuthenticated.createResolver(
       async (
         parent,
-        { id, createdAt, review, rating }: EditWatched,
+        { id, createdAt, review, rating, tvItemId, tvItemType }: EditWatched,
         { user }: { user: User },
       ) => {
         const originalWatched = await getWatchedById(id).withGraphFetched(
@@ -315,6 +288,8 @@ export const resolvers = {
         return upsertWatchedGraph({
           id,
           createdAt,
+          tvItemId,
+          tvItemType,
           review: review
             ? {
                 itemId: originalWatched.itemId,
@@ -353,11 +328,23 @@ export const resolvers = {
       return obj.constructor.name;
     },
   },
+  TvItem: {
+    __resolveType(obj) {
+      return obj.constructor.name;
+    },
+  },
   Watched: {
     item: (watched) =>
       watched.itemType === ItemTypes.Movie
         ? getMovieById(watched.itemId)
         : getTvById(watched.itemId),
+    tvItem: (watched) => {
+      if (!watched.tvItemType) return null;
+
+      return watched.tvItemType === TvItemTypes.Season
+        ? getSeasonById(watched.tvItemId)
+        : getEpisodeById(watched.tvItemId);
+    },
     user: (watched) => getUserById(watched.userId),
     rating: (watched) => getRatingByWatched(watched.id),
     review: (watched) => getReviewByWatched(watched.id),

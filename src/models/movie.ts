@@ -2,9 +2,13 @@ import { gql } from 'apollo-server-express';
 
 import { knex } from '../config';
 import { BaseModel } from './baseModel';
-import { Watched, ItemTypes } from './watched';
+import { Watched } from './watched';
 import { getMovieById } from '../queries/movieQueries';
-import { getWatchedWithReviews, getWatched } from '../queries/watchedQueries';
+import {
+  getWatchedWithReviews,
+  getPaginatedWatched,
+} from '../queries/watchedQueries';
+import { ItemTypes } from '../util/watchedItemHelper';
 
 export interface Genre {
   id: number;
@@ -185,7 +189,7 @@ export const resolvers = {
   Movie: {
     watched: async (movie, { cursor, filter }) => {
       const count = 12;
-      const query = filter ? getWatchedWithReviews : getWatched;
+      const query = filter ? getWatchedWithReviews : getPaginatedWatched;
       cursor = cursor || Date.now();
 
       const { total, results } = await query(
