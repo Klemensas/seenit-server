@@ -2,11 +2,12 @@ import { gql } from 'apollo-server-express';
 
 import { BaseModel } from './baseModel';
 import { User } from './user';
-import { Watched, ItemTypes, TvItemTypes } from './watched';
+import { Watched } from './watched';
 import { Tv } from './tv';
 import { Movie } from './movie';
 import { Season } from './season';
 import { Episode } from './episode';
+import { ItemTypes, TvItemTypes } from '../util/watchedItemHelper';
 
 export class Review extends BaseModel {
   readonly id: string;
@@ -92,8 +93,8 @@ export const typeDefs = gql`
     body: String!
     tmdbId: Int!
     userId: ID!
-    user: User
-    watched: Watched
+    user: User!
+    watched: Watched!
     tvItemType: TvItemType
     tvItemId: ID
     tvItem: TvItem
@@ -102,5 +103,22 @@ export const typeDefs = gql`
   input ReviewInput {
     id: ID
     body: String!
+  }
+
+  type ReviewCursor {
+    reviews: [Review!]!
+    cursor: String
+    hasMore: Boolean!
+  }
+
+  extend type Query {
+    reviews(
+      userId: ID
+      itemId: ID
+      itemType: ItemType
+      tvItemId: ID
+      tvItemType: TvItemType
+      cursor: String
+    ): ReviewCursor!
   }
 `;

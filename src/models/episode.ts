@@ -1,9 +1,10 @@
 import { gql, UserInputError } from 'apollo-server-core';
+import { performance } from 'perf_hooks';
 
 import { BaseModel } from './baseModel';
 import { Season } from './season';
 import { getEpisodeById } from '../queries/episodeQueries';
-import { performance } from 'perf_hooks';
+import { getSeasonById } from '../queries/seasonQueries';
 
 export class Episode extends BaseModel {
   readonly id: string;
@@ -26,6 +27,7 @@ export class Episode extends BaseModel {
 
   static tableName = 'Episode';
 
+  // TODO: double check if these also need relationMapping for tvItemType
   static relationMappings = {
     season: {
       relation: BaseModel.BelongsToOneRelation,
@@ -55,7 +57,7 @@ export const typeDefs = gql`
     vote_count: Int!
     tmdbId: Int!
     seasonId: ID!
-    season: [Season]
+    season: Season!
   }
 
   extend type Query {
@@ -66,7 +68,6 @@ export const typeDefs = gql`
 export const resolvers = {
   Query: {
     episode: (parent, { id }) => {
-      console.log('episode', id);
       try {
         const t0 = performance.now();
         const episode = getEpisodeById(id);
@@ -78,5 +79,8 @@ export const resolvers = {
         throw new UserInputError(err.message);
       }
     },
+  },
+  Episode: {
+    season: (episode) => getSeasonById(episode.seasonId),
   },
 };

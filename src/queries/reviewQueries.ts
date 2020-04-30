@@ -3,12 +3,28 @@ import { Transaction } from 'objection';
 
 import { knex } from '../config';
 import { Review } from '../models/review';
+import { perPage } from '../config/constants';
 
 export function getReviewById(
   id: number,
   connection: Transaction | Knex = knex,
 ) {
   return Review.query(connection).findById(id);
+}
+
+export function getPaginatedReviews(
+  where: Partial<Review>,
+  pagination: { count: number; after: string | number } = {
+    count: perPage,
+    after: Date.now(),
+  },
+  connection: Transaction | Knex = knex,
+) {
+  return Review.query(connection)
+    .where(where)
+    .orderBy('Review.createdAt', 'DESC')
+    .where('Review.createdAt', '<', pagination.after)
+    .page(0, pagination.count);
 }
 
 export function getReview(

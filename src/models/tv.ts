@@ -2,14 +2,19 @@ import { gql, UserInputError } from 'apollo-server-express';
 
 import { knex } from '../config';
 import { BaseModel } from './baseModel';
-import { Watched, ItemTypes } from './watched';
+import { Watched } from './watched';
 import { Genre, Company } from './movie';
 import { getTvById } from '../queries/tvQueries';
 import { Season } from './season';
 import { Episode } from './episode';
 import { getSeasonsByTvId } from '../queries/seasonQueries';
 import { performance } from 'perf_hooks';
-import { getWatched, getWatchedWithReviews } from '../queries/watchedQueries';
+import {
+  getPaginatedWatched,
+  getWatchedWithReviews,
+} from '../queries/watchedQueries';
+import { perPage } from '../config/constants';
+import { ItemTypes } from '../util/watchedItemHelper';
 
 export interface Author {
   id: number;
@@ -179,6 +184,23 @@ export const resolvers = {
       console.log('Seasons took ' + (t1 - t0) + ' milliseconds.');
 
       return seasons;
+    },
+
+    watched: async (tv, { cursor, filter }) => {
+      const count = perPage;
+      const query = filter ? getWatchedWithReviews : getPaginatedWatched;
+      cursor = cursor || Date.now();
+
+      const { total, results } = await query(
+        { itemId: tv.id },
+        { count, after: cursor },
+      );
+
+      const lastItem = results[results.length - 1] as any;
+      const newCursor = lastItem ? lastItem.createdAt : undefined;
+      const hasMore = total > count;
+
+      return { watched: results, hasMore, cursor: newCursor, filter };
     },
   },
 };
