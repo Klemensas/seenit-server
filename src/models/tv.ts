@@ -9,11 +9,7 @@ import { Season } from './season';
 import { Episode } from './episode';
 import { getSeasonsByTvId } from '../queries/seasonQueries';
 import { performance } from 'perf_hooks';
-
-export interface TvData {
-  episode: number;
-  season: number;
-}
+import { getWatched, getWatchedWithReviews } from '../queries/watchedQueries';
 
 export interface Author {
   id: number;
@@ -30,20 +26,23 @@ export interface Network {
   origin_country?: string;
 }
 
-// tslint:disable: variable-name
 export class Tv extends BaseModel {
   readonly id: string;
+  name?: string;
+  overview?: string;
+  first_air_date?: string;
+  poster_path?: string;
   backdrop_path?: string;
+  vote_average?: number;
+  vote_count?: number;
   created_by?: Author[];
   episode_run_time?: number[];
-  first_air_date?: string;
   genres?: Genre[];
   homepage?: string;
   in_production?: boolean;
   languages?: string[];
   last_air_date?: string;
   last_episode_to_air?: Episode;
-  name?: string;
   next_episode_to_air?: Episode;
   networks?: Network[];
   number_of_episodes?: number;
@@ -51,17 +50,12 @@ export class Tv extends BaseModel {
   origin_country?: string[];
   original_language?: string;
   original_name?: string;
-  overview?: string;
   popularity?: number;
-  poster_path?: string;
   production_companies?: Company[];
   status?: string;
   type?: string;
-  vote_average?: number;
-  vote_count?: number;
   titleVector?: string;
 
-  // tslint:enable: variable-name
   tmdbId: number;
 
   watched?: Watched;
@@ -114,36 +108,35 @@ export class Tv extends BaseModel {
 export const typeDefs = gql`
   type Tv {
     id: ID!
-    backdrop_path: String!
+    backdrop_path: String
     created_by: [Author]
     episode_run_time: [Int]
     first_air_date: String!
     genres: [Genre]
-    homepage: String
-    in_production: Boolean
+    homepage: String!
+    in_production: Boolean!
     languages: [String]
-    last_air_date: String
+    last_air_date: String!
     last_episode_to_air: Episode
     name: String!
     next_episode_to_air: Episode
     networks: [Network]
-    number_of_episodes: Int
-    number_of_seasons: Int
+    number_of_episodes: Int!
+    number_of_seasons: Int!
     origin_country: [String]
-    original_language: String
-    original_name: String
+    original_language: String!
+    original_name: String!
     overview: String!
-    popularity: Int
-    poster_path: String!
+    popularity: Int!
+    poster_path: String
     production_companies: [Company]
-    seasons: [Season]
-    status: String
-    type: String
+    seasons: [Season!]!
+    status: String!
+    type: String!
     vote_average: Float!
     vote_count: Int!
     tmdbId: Int
-    season: [Season]!
-    watched: [Watched]!
+    watched(cursor: String, filter: String): WatchedCursor!
   }
 
   type Author {
@@ -161,18 +154,8 @@ export const typeDefs = gql`
     origin_country: String
   }
 
-  type TvData {
-    season: Int
-    episode: Int
-  }
-
-  input TvDataInput {
-    episode: Int
-    season: Int
-  }
-
   extend type Query {
-    tv(id: ID): Tv
+    tv(id: ID): Tv!
   }
 `;
 

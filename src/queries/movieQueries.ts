@@ -5,7 +5,7 @@ import { knex } from '../config';
 import { Movie } from '../models/movie';
 
 export function getMovieById(
-  id: number,
+  id: string,
   connection: Transaction | Knex = knex,
 ) {
   return Movie.query(connection).findById(id);

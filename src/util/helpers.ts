@@ -9,4 +9,4 @@ export const omitBy = <T extends {}>(
   );
 
 export const omitFalsy = <T extends {}>(object: T) =>
-  omitBy(object, (property) => !!property);
+  omitBy(object, (property) => (property ?? false) !== false);

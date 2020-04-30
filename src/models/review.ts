@@ -2,7 +2,7 @@ import { gql } from 'apollo-server-express';
 
 import { BaseModel } from './baseModel';
 import { User } from './user';
-import { Watched, ItemTypes } from './watched';
+import { Watched, ItemTypes, TvItemTypes } from './watched';
 import { Tv } from './tv';
 import { Movie } from './movie';
 import { Season } from './season';
@@ -20,7 +20,11 @@ export class Review extends BaseModel {
 
   itemType: ItemTypes;
   itemId: string;
-  item?: Movie | Tv | Season | Episode;
+  item?: Movie | Tv;
+
+  tvItemType?: TvItemTypes;
+  tvItemId?: string;
+  tvItem?: Season | Episode;
 
   static tableName = 'Review';
 
@@ -49,6 +53,22 @@ export class Review extends BaseModel {
         to: 'Tv.id',
       },
     },
+    season: {
+      relation: BaseModel.BelongsToOneRelation,
+      modelClass: 'season',
+      join: {
+        from: 'Watched.tvItemId',
+        to: 'Season.id',
+      },
+    },
+    episode: {
+      relation: BaseModel.BelongsToOneRelation,
+      modelClass: 'episode',
+      join: {
+        from: 'Watched.tvItemId',
+        to: 'Episode.id',
+      },
+    },
   };
 
   static jsonSchema = {
@@ -74,7 +94,9 @@ export const typeDefs = gql`
     userId: ID!
     user: User
     watched: Watched
-    tvData: TvData
+    tvItemType: TvItemType
+    tvItemId: ID
+    tvItem: TvItem
   }
 
   input ReviewInput {

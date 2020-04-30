@@ -5,7 +5,7 @@ import { User } from './user';
 import { Rating } from './rating';
 import { Review } from './review';
 import { Movie } from './movie';
-import { Tv, TvData } from './tv';
+import { Tv } from './tv';
 
 import {
   getWatched,
@@ -22,10 +22,15 @@ import { getTvById } from '../queries/tvQueries';
 
 import { omitFalsy } from '../util/helpers';
 import { isAuthenticated } from '../apollo/helperResolvers';
+import { Episode } from './episode';
+import { Season } from './season';
 
 export const enum ItemTypes {
   'Movie' = 'Movie',
   'Tv' = 'Tv',
+}
+
+export const enum TvItemTypes {
   'Season' = 'Season',
   'Episode' = 'Episode',
 }
@@ -40,7 +45,10 @@ export class Watched extends BaseModel {
   itemType: ItemTypes;
   itemId: string;
   item?: Movie | Tv;
-  tvData?: TvData;
+
+  tvItemType?: TvItemTypes;
+  tvItemId?: string;
+  tvItem?: Season | Episode;
 
   rating?: Partial<Rating>;
   review?: Partial<Review>;
@@ -88,6 +96,22 @@ export class Watched extends BaseModel {
         to: 'Tv.id',
       },
     },
+    season: {
+      relation: BaseModel.BelongsToOneRelation,
+      modelClass: 'season',
+      join: {
+        from: 'Watched.tvItemId',
+        to: 'Season.id',
+      },
+    },
+    episode: {
+      relation: BaseModel.BelongsToOneRelation,
+      modelClass: 'episode',
+      join: {
+        from: 'Watched.tvItemId',
+        to: 'Episode.id',
+      },
+    },
   };
 
   static jsonSchema = {
@@ -108,7 +132,13 @@ export const typeDefs = gql`
     Tv
   }
 
+  enum TvItemType {
+    Season
+    Episode
+  }
+
   union Item = Movie | Tv
+  union TvItem = Season | Episode
 
   type Watched {
     id: ID!
@@ -121,7 +151,9 @@ export const typeDefs = gql`
     item: Item!
     rating: Rating
     review: Review
-    tvData: TvData
+    tvItemType: TvItemType
+    tvItemId: ID
+    tvItem: TvItem
   }
 
   type WatchedCursor {
@@ -136,6 +168,8 @@ export const typeDefs = gql`
       itemId: ID
       itemType: ItemType
       cursor: String
+      tvItemId: ID
+      tvItemType: TvItemType
     ): WatchedCursor!
     watched(id: ID!): Watched!
   }
@@ -146,8 +180,9 @@ export const typeDefs = gql`
       mediaType: TmdbMediaType!
       rating: RatingInput
       review: ReviewInput
-      tvData: TvDataInput
       createdAt: Float
+      tvItemId: ID
+      tvItemType: TvItemType
     ): Watched!
     editWatched(
       id: ID!
@@ -165,7 +200,8 @@ interface AddWatchedPayload {
   createdAt: number;
   rating?: Pick<Rating, 'value'>;
   review?: Pick<Review, 'body'>;
-  tvData?: TvData;
+  tvItemId?: string;
+  tvItemType?: TvItemTypes;
 }
 
 const itemLoaders = {
@@ -177,6 +213,8 @@ interface WatchesFilters {
   userId?: string;
   itemId?: string;
   itemType?: ItemTypes;
+  tvItemId?: string;
+  tvItemType?: TvItemTypes;
 }
 
 interface WatchedArgs extends WatchesFilters {
@@ -194,8 +232,8 @@ export const watchedResolver = async (
     after: cursor,
   });
 
-  const lastItem = results[results.length - 1] as any;
-  const newCursor = lastItem ? lastItem.createdAt : undefined;
+  const lastItem = results[results.length - 1];
+  const newCursor = lastItem?.createdAt;
   const hasMore = total > count;
 
   return { watched: results, hasMore, cursor: newCursor };
@@ -221,10 +259,11 @@ export const resolvers = {
         {
           itemId,
           mediaType,
-          tvData,
           rating,
           review,
           createdAt,
+          tvItemId,
+          tvItemType,
         }: AddWatchedPayload,
         { user }: { user: User },
       ) => {
@@ -233,6 +272,8 @@ export const resolvers = {
           itemId,
           itemType: mediaType,
           tmdbId,
+          tvItemId,
+          tvItemType,
         };
         const userId = user.id;
         const ratingItem = rating
@@ -252,7 +293,6 @@ export const resolvers = {
         return createWatchedGraph({
           ...itemData,
           userId,
-          tvData,
           rating: ratingItem,
           review: reviewItem,
           createdAt,

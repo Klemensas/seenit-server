@@ -5,7 +5,6 @@ import { Season } from './season';
 import { getEpisodeById } from '../queries/episodeQueries';
 import { performance } from 'perf_hooks';
 
-// tslint:disable: variable-name
 export class Episode extends BaseModel {
   readonly id: string;
   name?: string;
@@ -20,7 +19,6 @@ export class Episode extends BaseModel {
   crew: any[];
   guest_stars: any[];
 
-  // tslint:enable: variable-name
   tmdbId: number;
 
   seasonId: string;
@@ -47,21 +45,21 @@ export class Episode extends BaseModel {
 export const typeDefs = gql`
   type Episode {
     id: ID!
-    name: String
-    overview: String
-    episode_number: Int
+    name: String!
+    overview: String!
+    episode_number: Int!
     air_date: String
     production_code: String
     still_path: String
-    vote_average: Float
-    vote_count: Int
-    tmdbId: Int
-    seasonId: ID
+    vote_average: Float!
+    vote_count: Int!
+    tmdbId: Int!
+    seasonId: ID!
     season: [Season]
   }
 
   extend type Query {
-    episode(id: ID): Episode
+    episode(id: ID): Episode!
   }
 `;
 
