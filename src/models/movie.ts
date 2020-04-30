@@ -117,7 +117,7 @@ export const typeDefs = gql`
   type Movie {
     id: ID!
     adult: Boolean!
-    backdrop_path: String!
+    backdrop_path: String
     belongs_to_collection: Collection
     budget: Int!
     genre: [Genre]
@@ -127,7 +127,7 @@ export const typeDefs = gql`
     original_title: String
     overview: String!
     popularity: Float
-    poster_path: String!
+    poster_path: String
     production_companies: [Company]
     production_countries: [Country]
     release_date: String!
@@ -141,7 +141,6 @@ export const typeDefs = gql`
     vote_average: Float!
     vote_count: Int!
     tmdbId: Int
-    # watched: [Watched!]!
     watched(cursor: String, filter: String): WatchedCursor!
   }
 
@@ -194,8 +193,8 @@ export const resolvers = {
         { count, after: cursor },
       );
 
-      const lastItem = results[results.length - 1] as any;
-      const newCursor = lastItem ? lastItem.createdAt : undefined;
+      const lastItem = results[results.length - 1];
+      const newCursor = lastItem?.createdAt;
       const hasMore = total > count;
 
       return { watched: results, hasMore, cursor: newCursor, filter };

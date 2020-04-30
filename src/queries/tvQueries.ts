@@ -4,7 +4,7 @@ import { Transaction } from 'objection';
 import { knex } from '../config';
 import { Tv } from '../models/tv';
 
-export function getTvById(id: number, connection: Transaction | Knex = knex) {
+export function getTvById(id: string, connection: Transaction | Knex = knex) {
   return Tv.query(connection).findById(id);
 }
 
