@@ -228,9 +228,21 @@ export async function getRangeChanges(
     query.whereIn('tmdbId', changedIds),
   ]);
 
-  const newItems = await (type === 'movie'
-    ? updateMovieItems(currentItems as Movie[], data)
-    : updateTvItems(currentItems, data));
+  let newItems;
+  try {
+    newItems = await (type === 'movie'
+      ? updateMovieItems(currentItems as Movie[], data)
+      : updateTvItems(currentItems, data));
+  } catch (err) {
+    await logError(
+      `Couldn't save the following - ${JSON.stringify({
+        data,
+        changedIds,
+      })}`,
+    );
+    throw err;
+  }
+
   console.log(
     'yep update',
     data.items.length,
@@ -314,9 +326,7 @@ storeAllChanges()
       process.exit(0);
     }, 1000);
   })
-  .catch((err) => {
-    console.log('uh oh');
-    logError(`Changes bailed - ${err.toString()}`, () => {
-      process.exit(1);
-    });
+  .catch(async (err) => {
+    await logError(`Changes bailed - ${err.toString()}`);
+    process.exit(1);
   });

@@ -102,7 +102,14 @@ export class TMDB {
     },
   });
 
-  constructor(private apikey: string) {}
+  constructor(private apikey: string) {
+    this.httpClient.interceptors.request.use((config) => {
+      config.params = config.params || {};
+      config.params['api_key'] = this.apikey;
+
+      return config;
+    });
+  }
 
   get<T = any>(query: string, config?: AxiosRequestConfig) {
     return this.httpClient.get<T>(query, config);
