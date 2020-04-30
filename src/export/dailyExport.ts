@@ -173,14 +173,12 @@ export class DailyExports {
         reader.resume();
         return;
       } catch (err) {
-        logError(
+        await logError(
           `${err.toString()}-${
             err.response ? JSON.stringify(err.response.headers) : ''
           }-${remainingRequests}`,
-          () => {
-            process.exit(1);
-          },
         );
+        process.exit(1);
       }
     };
   }
@@ -299,7 +297,7 @@ export class DailyExports {
       if (err && err.response) {
         const limits = TMDB.extractLimits(err.response.headers);
         if (err.response.status === 404) {
-          logError(`No item - ${id}`);
+          await logError(`No item - ${id}`);
 
           return {
             data: null,
@@ -309,14 +307,14 @@ export class DailyExports {
         }
 
         if (err.response.status === 504) {
-          logError(`Got timeout for - ${id}, attempt #${attempt}`);
+          await logError(`Got timeout for - ${id}, attempt #${attempt}`);
 
           return this.fetchItemWithDeletion(id, type, attempt + 1);
         }
 
         if (err.response.status === 429) {
           const retryAfter = +err.response.headers['retry-after'];
-          logError(`Trying to recover - ${id} -- ${err.toString()}`);
+          await logError(`Trying to recover - ${id} -- ${err.toString()}`);
           await new Promise((resolve) =>
             setTimeout(() => resolve(), retryAfter * 1000),
           );
@@ -324,7 +322,7 @@ export class DailyExports {
         }
       }
 
-      logError(`Unforseen error - ${id}, type ${type}`);
+      await logError(`Unforseen error - ${id}, type ${type}`);
       throw err;
     }
   }
