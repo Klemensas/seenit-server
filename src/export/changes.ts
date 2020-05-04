@@ -31,14 +31,14 @@ export async function loadEpisodeData() {
   while (items.length) {
     target = items.shift();
     item = await DailyExports.fetchItemWithDeletion(target.tmdbId, 'tv');
-    const { data, remainingLimit, nextBatch } = item;
+    const { data, remainingLimit, limit, nextBatch } = item;
 
     if (data) {
       const { id, ...newData } = data;
       group.push({ ...target, ...newData });
     }
 
-    if (!remainingLimit) {
+    if (limit && !remainingLimit) {
       await new Promise((resolve) =>
         setTimeout(
           resolve,
@@ -178,6 +178,7 @@ async function loadItemsSync(ids: number[], type: MediaType) {
       data,
       id,
       remainingLimit,
+      limit,
       nextBatch,
     } = await DailyExports.fetchItemWithDeletion(list.shift(), type);
     if (data) {
@@ -186,7 +187,7 @@ async function loadItemsSync(ids: number[], type: MediaType) {
       deletedIds.push(id);
     }
 
-    if (!remainingLimit) {
+    if (limit && !remainingLimit) {
       await new Promise((resolve) =>
         setTimeout(
           resolve,
@@ -221,7 +222,9 @@ export async function getRangeChanges(
   const changedIds = changes.filter(({ adult }) => !adult).map(({ id }) => id);
   console.log(`Starting loading for ${changedIds.length} ${type} items`);
   const query =
-    type === 'movie' ? Movie.query() : Tv.query().eager('[seasons.episodes]');
+    type === 'movie'
+      ? Movie.query()
+      : Tv.query().withGraphFetched('[seasons.episodes]');
 
   const [data, currentItems] = await Promise.all([
     loadItemsSync(changedIds, type) as any,
