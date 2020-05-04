@@ -106,7 +106,7 @@ export class Movie extends BaseModel {
     properties: {},
   };
 
-  async $formatDatabaseJson(json) {
+  $formatDatabaseJson(json) {
     json = super.$formatDatabaseJson(json);
 
     if (json.title) {
