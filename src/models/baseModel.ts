@@ -1,28 +1,6 @@
-import {
-  Model,
-  Constructor,
-  Transaction,
-  QueryBuilder,
-  QueryContext,
-} from 'objection';
-import * as dbErrors from 'db-errors';
-import * as knex from 'knex';
+import { Model, QueryContext } from 'objection';
 
-class DbErrors extends Model {
-  static query<QM extends Model>(
-    this: Constructor<QM>,
-    trxOrKnex?: Transaction | knex,
-  ): QueryBuilder<QM> {
-    return (
-      super.query
-        // eslint-disable-next-line prefer-rest-params
-        .apply(this, arguments)
-        .onError((err) => Promise.reject(dbErrors.wrapError(err)))
-    );
-  }
-}
-
-export class BaseModel extends DbErrors {
+export class BaseModel extends Model {
   '#id'?: string;
   '#ref'?: string;
   '#dbRef'?: string;

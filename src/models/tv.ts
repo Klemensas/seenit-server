@@ -99,7 +99,7 @@ export class Tv extends BaseModel {
     properties: {},
   };
 
-  async $formatDatabaseJson(json) {
+  $formatDatabaseJson(json) {
     json = super.$formatDatabaseJson(json);
 
     if (json.name) {
