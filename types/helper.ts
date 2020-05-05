@@ -1,5 +1,5 @@
 import { Request as ExpressRequest } from 'express-serve-static-core';
-import { User } from '../src/models/user';
+import { User } from '../src/models/user/model';
 
 export interface Dict<T = any> {
   [key: string]: T;

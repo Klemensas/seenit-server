@@ -6,12 +6,12 @@ import TMDB, {
   TmdbSeason,
   TmdbEpisode,
 } from '../services/TMDB';
-import { Movie } from '../models/movie';
-import { Tv } from '../models/tv';
+import { Movie } from '../models/movie/model';
+import { Tv } from '../models/tv/model';
 import { DailyExports } from './dailyExport';
-import { DailyChanges } from '../models/dailyChanges';
-import { Season } from '../models/season';
-import { Episode } from '../models/episode';
+import { DailyChanges } from '../models/dailyChanges/model';
+import { Season } from '../models/season/model';
+import { Episode } from '../models/episode/model';
 import { logError } from '../errors/log';
 
 const exportDate = '2019-08-30';

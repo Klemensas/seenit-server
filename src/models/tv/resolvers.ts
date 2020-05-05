@@ -5,6 +5,7 @@ import { Tv } from './model';
 import { getTvById } from './queries';
 import { perPage } from '../../config/constants';
 import { getSeasonsByTvId } from '../season/queries';
+import { getWatchedWithReviews, getPaginatedWatched } from '../watched/queries';
 
 export const resolvers = {
   Query: {

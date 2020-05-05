@@ -1,10 +1,5 @@
-import { gql, UserInputError } from 'apollo-server-core';
-import { performance } from 'perf_hooks';
-
 import { BaseModel } from '../baseModel';
 import { Season } from '../season/model';
-import { getEpisodeById } from './queries';
-import { getSeasonById } from '../season/seasonQueries';
 
 export class Episode extends BaseModel {
   readonly id: string;

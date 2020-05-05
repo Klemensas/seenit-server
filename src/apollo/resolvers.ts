@@ -1,5 +1,5 @@
-import { Tv } from '../models/tv';
-import { Movie } from '../models/movie';
+import { Tv } from '../models/tv/model';
+import { Movie } from '../models/movie/model';
 import { knex } from '../config';
 
 export const serviceResolvers = {
@@ -57,10 +57,10 @@ export const serviceResolvers = {
           .limit(20)
           // .omit(['score', 'popularity'])
           .debug()
-          .then(r => {
+          .then((r) => {
             return r;
           })
-          .catch(err => {
+          .catch((err) => {
             console.log('eeererere', err);
             throw err;
           })

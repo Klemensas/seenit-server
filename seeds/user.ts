@@ -1,5 +1,6 @@
 import * as Knex from 'knex';
-import { User } from '../src/models/user';
+
+import { User } from '../src/models/user/model';
 
 export default (knex: Knex, userCount = 100, namePrefix = 'user') =>
   User.query(knex)

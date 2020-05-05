@@ -3,7 +3,7 @@ import { UserInputError, AuthenticationError } from 'apollo-server-express';
 import { isAuthenticated } from '../../apollo/helperResolvers';
 import { getUsers, getUser, createUser, getFullUser } from './queries';
 import { Auth } from '../../auth/auth';
-import { watchedResolver } from '../watched/model';
+import { watchedResolver } from '../watched/resolvers';
 
 export const resolvers = {
   Query: {

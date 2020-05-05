@@ -4,8 +4,8 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as BearerStrategy } from 'passport-http-bearer';
 import * as bcrypt from 'bcrypt';
 
-import { getUserById, getFullUser, getUser } from '../queries/userQueries';
-import { User } from '../models/user';
+import { getUserById, getFullUser } from '../models/user/queries';
+import { User } from '../models/user/model';
 import { config } from '../config';
 import { AuthError } from '../errors/authError';
 

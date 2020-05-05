@@ -1,5 +1,5 @@
-import { BaseModel } from './baseModel';
-import { MediaType } from '../services/TMDB';
+import { BaseModel } from '../baseModel';
+import { MediaType } from '../../services/TMDB';
 
 export class DailyChanges extends BaseModel {
   readonly id: number;

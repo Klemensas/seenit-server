@@ -2,9 +2,9 @@ import { Response, NextFunction } from 'express';
 
 import { BaseRouter } from './baseRouter';
 import { Auth } from '../auth/auth';
-import { Rating } from '../models/rating';
-import { Review } from '../models/review';
-import * as watchedQueries from '../queries/watchedQueries';
+import { Rating } from '../models/rating/model';
+import { Review } from '../models/review/model';
+import * as watchedQueries from '../models/watched/queries';
 import { Request } from '../../types/helper';
 
 export class WatchedRouter extends BaseRouter {

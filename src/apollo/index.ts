@@ -2,30 +2,22 @@ import * as express from 'express';
 import { ApolloServer, AuthenticationError } from 'apollo-server-express';
 import { mergeDeep } from 'apollo-utilities';
 
-import {
-  typeDefs as watchedTypeDefs,
-  resolvers as watchedResolvers,
-} from '../models/watched';
-import {
-  typeDefs as userTypeDefs,
-  resolvers as userResolvers,
-} from '../models/user';
-import {
-  typeDefs as movieTypeDefs,
-  resolvers as movieResolvers,
-} from '../models/movie';
-import { typeDefs as tvTypeDefs, resolvers as tvResolvers } from '../models/tv';
-import {
-  typeDefs as seasonTypeDefs,
-  resolvers as seasonResolvers,
-} from '../models/season';
-import {
-  typeDefs as episodeTypeDefs,
-  resolvers as episodeResolvers,
-} from '../models/episode';
-import { typeDefs as ratingTypeDefs } from '../models/rating';
-import { typeDefs as reviewTypeDefs } from '../models/review';
+import { typeDefs as watchedTypeDefs } from '../models/watched/typeDefs';
+import { resolvers as watchedResolvers } from '../models/watched/resolvers';
+import { typeDefs as userTypeDefs } from '../models/user/typeDefs';
+import { resolvers as userResolvers } from '../models/user/resolvers';
+import { typeDefs as movieTypeDefs } from '../models/movie/typeDefs';
+import { resolvers as movieResolvers } from '../models/movie/resolvers';
+import { typeDefs as tvTypeDefs } from '../models/tv/typeDefs';
+import { resolvers as tvResolvers } from '../models/tv/resolvers';
+import { typeDefs as seasonTypeDefs } from '../models/season/typeDefs';
+import { resolvers as seasonResolvers } from '../models/season/resolvers';
+import { typeDefs as episodeTypeDefs } from '../models/episode/typeDefs';
+import { resolvers as episodeResolvers } from '../models/episode/resolvers';
+import { typeDefs as ratingTypeDefs } from '../models/rating/typeDefs';
+import { typeDefs as reviewTypeDefs } from '../models/review/typeDefs';
 import reviewResolvers from '../models/review/resolvers';
+
 import { Auth } from '../auth/auth';
 import { baseType, serviceTypeDefs } from './typeDefs';
 import { serviceResolvers } from './resolvers';

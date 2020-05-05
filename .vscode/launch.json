@@ -3,8 +3,7 @@
   // Hover to view descriptions of existing attributes.
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
-  "configurations": [
-    {
+  "configurations": [{
       "name": "Run TS",
       "type": "node",
       "request": "launch",
@@ -12,7 +11,7 @@
       "runtimeArgs": [
         "--nolazy",
         "-r",
-        "ts-node/register",
+        "ts-node/register/transpile-only",
         "-r",
         "dotenv/config"
       ],
@@ -29,7 +28,7 @@
       "runtimeArgs": [
         "--nolazy",
         "-r",
-        "ts-node/register",
+        "ts-node/register/transpile-only",
         "-r",
         "dotenv/config"
       ],
