@@ -2,10 +2,9 @@ import {
   cursorListResolver,
   WatchedItemListArgs,
 } from '../../util/watchedItemHelper';
-
-import { getPaginatedReviews } from '../../queries/reviewQueries';
-import { getWatchedById } from '../../queries/watchedQueries';
-import { Review } from '../review';
+import { Review } from './model';
+import { getPaginatedReviews } from './queries';
+import { getWatchedById } from '../watched/queries';
 
 const reviewResolver = cursorListResolver(getPaginatedReviews, 'reviews');
 

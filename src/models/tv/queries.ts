@@ -1,8 +1,8 @@
 import * as Knex from 'knex';
 import { Transaction } from 'objection';
 
-import { knex } from '../config';
-import { Tv } from '../models/tv';
+import { knex } from '../../config';
+import { Tv } from './model';
 
 export function getTvById(id: string, connection: Transaction | Knex = knex) {
   return Tv.query(connection).findById(id);

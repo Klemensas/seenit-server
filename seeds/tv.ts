@@ -1,7 +1,7 @@
 import * as Knex from 'knex';
 
 import tvList from './util/tvList';
-import { Tv } from '../src/models/tv';
+import { Tv } from '../src/models/tv/model';
 
 export default (knex: Knex, list = tvList) =>
   Tv.query(knex)

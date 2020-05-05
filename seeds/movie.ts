@@ -1,7 +1,7 @@
 import * as Knex from 'knex';
 
 import movieList from './util/movieList';
-import { Movie } from '../src/models/movie';
+import { Movie } from '../src/models/movie/model';
 
 export default (knex: Knex, list = movieList) =>
   Movie.query(knex)

@@ -5,8 +5,8 @@ import * as path from 'path';
 import * as LineByLineReader from 'line-by-line';
 
 import { knex } from '../config';
-import { Movie } from '../models/movie';
-import { Tv } from '../models/tv';
+import { Movie } from '../models/movie/model';
+import { Tv } from '../models/tv/model';
 import TMDB, { MediaType } from '../services/TMDB';
 import { formatTvItems } from './changes';
 import { logError } from '../errors/log';

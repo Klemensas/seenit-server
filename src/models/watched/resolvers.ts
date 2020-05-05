@@ -1,197 +1,27 @@
-import { gql } from 'apollo-server-express';
-
-import { BaseModel } from './baseModel';
-import { User } from './user';
-import { Rating } from './rating';
-import { Review } from './review';
-import { Movie } from './movie';
-import { Tv } from './tv';
-
+import { getTvById } from '../tv/queries';
+import {
+  TvItemTypes,
+  ItemTypes,
+  cursorListResolver,
+  WatchedItemListArgs,
+} from '../../util/watchedItemHelper';
+import { Rating } from '../rating/model';
+import { Review } from '../review/model';
+import { getMovieById } from '../movie/queries';
 import {
   getPaginatedWatched,
   getWatchedById,
   createWatchedGraph,
-  deleteWatchedById,
   upsertWatchedGraph,
-} from '../queries/watchedQueries';
-import { getUserById } from '../queries/userQueries';
-import { getMovieById } from '../queries/movieQueries';
-import { getRatingByWatched } from '../queries/ratingQueries';
-import { getReviewByWatched } from '../queries/reviewQueries';
-import { getTvById } from '../queries/tvQueries';
-
-import { isAuthenticated } from '../apollo/helperResolvers';
-import { Episode } from './episode';
-import { Season } from './season';
-import { getSeasonById } from '../queries/seasonQueries';
-import { getEpisodeById } from '../queries/episodeQueries';
-import {
-  ItemTypes,
-  TvItemTypes,
-  WatchedItemListArgs,
-  cursorListResolver,
-} from '../util/watchedItemHelper';
-
-export class Watched extends BaseModel {
-  readonly id: string;
-  tmdbId: number;
-
-  userId?: string;
-  user?: User;
-
-  itemType: ItemTypes;
-  itemId: string;
-  item?: Movie | Tv;
-
-  tvItemType?: TvItemTypes;
-  tvItemId?: string;
-  tvItem?: Season | Episode;
-
-  rating?: Partial<Rating>;
-  review?: Partial<Review>;
-
-  static tableName = 'Watched';
-
-  static relationMappings = {
-    user: {
-      relation: BaseModel.BelongsToOneRelation,
-      modelClass: 'user',
-      join: {
-        from: 'Watched.id',
-        to: 'User.id',
-      },
-    },
-    rating: {
-      relation: BaseModel.HasOneRelation,
-      modelClass: 'rating',
-      join: {
-        from: 'Watched.id',
-        to: 'Rating.watchedId',
-      },
-    },
-    review: {
-      relation: BaseModel.HasOneRelation,
-      modelClass: 'review',
-      join: {
-        from: 'Watched.id',
-        to: 'Review.watchedId',
-      },
-    },
-    movie: {
-      relation: BaseModel.BelongsToOneRelation,
-      modelClass: 'movie',
-      join: {
-        from: 'Watched.itemId',
-        to: 'Movie.id',
-      },
-    },
-    tv: {
-      relation: BaseModel.BelongsToOneRelation,
-      modelClass: 'tv',
-      join: {
-        from: 'Watched.itemId',
-        to: 'Tv.id',
-      },
-    },
-    season: {
-      relation: BaseModel.BelongsToOneRelation,
-      modelClass: 'season',
-      join: {
-        from: 'Watched.tvItemId',
-        to: 'Season.id',
-      },
-    },
-    episode: {
-      relation: BaseModel.BelongsToOneRelation,
-      modelClass: 'episode',
-      join: {
-        from: 'Watched.tvItemId',
-        to: 'Episode.id',
-      },
-    },
-  };
-
-  static jsonSchema = {
-    type: 'object',
-    required: ['itemId', 'userId'],
-
-    properties: {
-      id: { type: 'string' },
-      itemId: { type: 'string' },
-      userId: { type: 'string' },
-    },
-  };
-}
-
-export const typeDefs = gql`
-  enum ItemType {
-    Movie
-    Tv
-  }
-
-  enum TvItemType {
-    Season
-    Episode
-  }
-
-  union Item = Movie | Tv
-  union TvItem = Season | Episode
-
-  type Watched {
-    id: ID!
-    tmdbId: Int!
-    createdAt: Float!
-    updatedAt: Float!
-    userId: ID!
-    user: User!
-    itemType: ItemType!
-    item: Item!
-    rating: Rating
-    review: Review
-    tvItemType: TvItemType
-    tvItemId: ID
-    tvItem: TvItem
-  }
-
-  type WatchedCursor {
-    watched: [Watched!]!
-    cursor: String
-    hasMore: Boolean!
-  }
-
-  extend type Query {
-    watches(
-      userId: ID
-      itemId: ID
-      itemType: ItemType
-      tvItemId: ID
-      tvItemType: TvItemType
-      cursor: String
-    ): WatchedCursor!
-    watched(id: ID!): Watched!
-  }
-
-  extend type Mutation {
-    addWatched(
-      itemId: ID!
-      itemType: ItemType!
-      rating: RatingInput
-      review: ReviewInput
-      createdAt: Float
-      tvItemId: ID
-      tvItemType: TvItemType
-    ): Watched!
-    editWatched(
-      id: ID!
-      createdAt: Float
-      rating: RatingInput
-      review: ReviewInput
-      tvItemId: ID
-      tvItemType: TvItemType
-    ): Watched!
-    removeWatched(itemId: ID!): ID!
-  }
-`;
+  deleteWatchedById,
+} from './queries';
+import { isAuthenticated } from '../../apollo/helperResolvers';
+import { User } from '../user/model';
+import { getSeasonById } from '../season/queries';
+import { getEpisodeById } from '../episode/queries';
+import { getUserById } from '../user/queries';
+import { getReviewByWatched } from '../review/queries';
+import { getRatingByWatched } from '../rating/queries';
 
 interface AddWatchedPayload {
   itemId: string;

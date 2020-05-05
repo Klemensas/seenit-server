@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 
 import { BaseRouter } from './baseRouter';
 import { Auth } from '../auth/auth';
-import * as ratingQueries from '../queries/ratingQueries';
+import * as ratingQueries from '../models/rating/queries';
 import { Request } from '../../types/helper';
 
 export class RatingRouter extends BaseRouter {

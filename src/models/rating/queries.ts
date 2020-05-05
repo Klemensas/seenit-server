@@ -1,8 +1,8 @@
 import * as Knex from 'knex';
 import { Transaction } from 'objection';
 
-import { knex } from '../config';
-import { Rating } from '../models/rating';
+import { knex } from '../../config';
+import { Rating } from './model';
 
 export function getRatingById(
   id: number,

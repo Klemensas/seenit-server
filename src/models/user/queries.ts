@@ -1,8 +1,8 @@
 import * as Knex from 'knex';
 import { Transaction } from 'objection';
 
-import { knex } from '../config';
-import { User } from '../models/user';
+import { knex } from '../../config';
+import { User } from './model';
 
 export function getUserById(
   id: number | string,

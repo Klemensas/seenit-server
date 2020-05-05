@@ -1,9 +1,9 @@
 import * as Knex from 'knex';
 import { Transaction } from 'objection';
 
-import { knex } from '../config';
-import { Review } from '../models/review';
-import { perPage } from '../config/constants';
+import { knex } from '../../config';
+import { Review } from './model';
+import { perPage } from '../../config/constants';
 
 export function getReviewById(
   id: number,

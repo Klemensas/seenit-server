@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 
 import { BaseRouter } from './baseRouter';
 import { Auth } from '../auth/auth';
-import { createUser, getUserById } from '../queries/userQueries';
+import { createUser, getUserById } from '../models/user/queries';
 import { Request } from '../../types/helper';
 
 export class UserRouter extends BaseRouter {

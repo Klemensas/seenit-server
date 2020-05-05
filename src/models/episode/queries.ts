@@ -1,8 +1,8 @@
 import * as Knex from 'knex';
 import { Transaction } from 'objection';
 
-import { knex } from '../config';
-import { Episode } from '../models/episode';
+import { knex } from '../../config';
+import { Episode } from './model';
 
 export function getEpisodeById(
   id: string,

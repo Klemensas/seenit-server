@@ -2,7 +2,7 @@ import * as express from 'express';
 
 import { config } from '../config';
 import dailyExport from './dailyExport';
-import { Tv } from '../models/tv';
+import { Tv } from '../models/tv/model';
 
 const app = express();
 

@@ -1,27 +1,20 @@
-import { gql } from 'apollo-server-express';
+import { BaseModel } from '../baseModel';
+import { User } from '../user/model';
+import { Rating } from '../rating/model';
+import { Review } from '../review/model';
+import { Movie } from '../movie/model';
+import { Tv } from '../tv/model';
 
-import { BaseModel } from './baseModel';
-import { User } from './user';
-import { Watched } from './watched';
-import { Movie } from './movie';
-import { Tv } from './tv';
-import { Season } from './season';
-import { Episode } from './episode';
-import { ItemTypes, TvItemTypes } from '../util/watchedItemHelper';
+import { Episode } from '../episode/model';
+import { Season } from '../season/model';
+import { ItemTypes, TvItemTypes } from '../../util/watchedItemHelper';
 
-// TODO: validation and better definitino for max val
-export const maxRatingValue = 5;
-
-export class Rating extends BaseModel {
+export class Watched extends BaseModel {
   readonly id: string;
-  value: number;
-  symbol: string;
+  tmdbId: number;
 
   userId?: string;
   user?: User;
-
-  watchedId?: string;
-  watched?: Watched;
 
   itemType: ItemTypes;
   itemId: string;
@@ -31,22 +24,41 @@ export class Rating extends BaseModel {
   tvItemId?: string;
   tvItem?: Season | Episode;
 
-  static tableName = 'Rating';
+  rating?: Partial<Rating>;
+  review?: Partial<Review>;
+
+  static tableName = 'Watched';
 
   static relationMappings = {
     user: {
       relation: BaseModel.BelongsToOneRelation,
       modelClass: 'user',
       join: {
-        from: 'Rating.id',
+        from: 'Watched.id',
         to: 'User.id',
+      },
+    },
+    rating: {
+      relation: BaseModel.HasOneRelation,
+      modelClass: 'rating',
+      join: {
+        from: 'Watched.id',
+        to: 'Rating.watchedId',
+      },
+    },
+    review: {
+      relation: BaseModel.HasOneRelation,
+      modelClass: 'review',
+      join: {
+        from: 'Watched.id',
+        to: 'Review.watchedId',
       },
     },
     movie: {
       relation: BaseModel.BelongsToOneRelation,
       modelClass: 'movie',
       join: {
-        from: 'Rating.itemId',
+        from: 'Watched.itemId',
         to: 'Movie.id',
       },
     },
@@ -54,7 +66,7 @@ export class Rating extends BaseModel {
       relation: BaseModel.BelongsToOneRelation,
       modelClass: 'tv',
       join: {
-        from: 'Rating.itemId',
+        from: 'Watched.itemId',
         to: 'Tv.id',
       },
     },
@@ -78,36 +90,12 @@ export class Rating extends BaseModel {
 
   static jsonSchema = {
     type: 'object',
-    required: ['value', 'itemId', 'userId'],
+    required: ['itemId', 'userId'],
 
     properties: {
       id: { type: 'string' },
-      value: { type: 'float' },
-      tmdbId: { type: 'integer' },
       itemId: { type: 'string' },
       userId: { type: 'string' },
-      watchedId: { type: 'string' },
     },
   };
 }
-
-export const typeDefs = gql`
-  type Rating {
-    id: ID!
-    value: Float!
-    tmdbId: Int!
-    userId: ID!
-    createdAt: Float!
-    updatedAt: Float!
-    user: User
-    watched: Watched
-    tvItemType: TvItemType
-    tvItemId: ID
-    tvItem: TvItem
-  }
-
-  input RatingInput {
-    id: ID
-    value: Float!
-  }
-`;

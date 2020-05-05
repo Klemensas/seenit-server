@@ -1,9 +1,9 @@
 import * as Knex from 'knex';
 import { Transaction } from 'objection';
 
-import { knex } from '../config';
-import { Watched } from '../models/watched';
-import { perPage } from '../config/constants';
+import { knex } from '../../config';
+import { perPage } from '../../config/constants';
+import { Watched } from './model';
 
 export function getWatchedById(
   id: string,

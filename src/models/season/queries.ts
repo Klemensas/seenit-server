@@ -1,8 +1,8 @@
 import * as Knex from 'knex';
 import { Transaction } from 'objection';
 
-import { knex } from '../config';
-import { Season } from '../models/season';
+import { knex } from '../../config';
+import { Season } from './model';
 
 export function getSeasonById(
   id: string,

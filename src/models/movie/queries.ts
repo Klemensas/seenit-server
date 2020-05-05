@@ -1,8 +1,8 @@
 import * as Knex from 'knex';
 import { Transaction } from 'objection';
 
-import { knex } from '../config';
-import { Movie } from '../models/movie';
+import { knex } from '../../config';
+import { Movie } from './model';
 
 export function getMovieById(
   id: string,

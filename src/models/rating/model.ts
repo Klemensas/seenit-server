@@ -1,17 +1,19 @@
-import { gql } from 'apollo-server-express';
+import { BaseModel } from '../baseModel';
+import { User } from '../user/model';
+import { Watched } from '../watched/model';
+import { Movie } from '../movie/model';
+import { Tv } from '../tv/model';
+import { Season } from '../season/model';
+import { Episode } from '../episode/model';
+import { ItemTypes, TvItemTypes } from '../../util/watchedItemHelper';
 
-import { BaseModel } from './baseModel';
-import { User } from './user';
-import { Watched } from './watched';
-import { Tv } from './tv';
-import { Movie } from './movie';
-import { Season } from './season';
-import { Episode } from './episode';
-import { ItemTypes, TvItemTypes } from '../util/watchedItemHelper';
+// TODO: validation and better definitino for max val
+export const maxRatingValue = 5;
 
-export class Review extends BaseModel {
+export class Rating extends BaseModel {
   readonly id: string;
-  body: string;
+  value: number;
+  symbol: string;
 
   userId?: string;
   user?: User;
@@ -27,14 +29,14 @@ export class Review extends BaseModel {
   tvItemId?: string;
   tvItem?: Season | Episode;
 
-  static tableName = 'Review';
+  static tableName = 'Rating';
 
   static relationMappings = {
     user: {
       relation: BaseModel.BelongsToOneRelation,
       modelClass: 'user',
       join: {
-        from: 'Review.id',
+        from: 'Rating.id',
         to: 'User.id',
       },
     },
@@ -42,7 +44,7 @@ export class Review extends BaseModel {
       relation: BaseModel.BelongsToOneRelation,
       modelClass: 'movie',
       join: {
-        from: 'Review.itemId',
+        from: 'Rating.itemId',
         to: 'Movie.id',
       },
     },
@@ -50,7 +52,7 @@ export class Review extends BaseModel {
       relation: BaseModel.BelongsToOneRelation,
       modelClass: 'tv',
       join: {
-        from: 'Review.itemId',
+        from: 'Rating.itemId',
         to: 'Tv.id',
       },
     },
@@ -74,11 +76,11 @@ export class Review extends BaseModel {
 
   static jsonSchema = {
     type: 'object',
-    required: ['body', 'itemId', 'userId'],
+    required: ['value', 'itemId', 'userId'],
 
     properties: {
       id: { type: 'string' },
-      body: { type: 'string' },
+      value: { type: 'float' },
       tmdbId: { type: 'integer' },
       itemId: { type: 'string' },
       userId: { type: 'string' },
@@ -86,39 +88,3 @@ export class Review extends BaseModel {
     },
   };
 }
-
-export const typeDefs = gql`
-  type Review {
-    id: ID!
-    body: String!
-    tmdbId: Int!
-    userId: ID!
-    user: User!
-    watched: Watched!
-    tvItemType: TvItemType
-    tvItemId: ID
-    tvItem: TvItem
-  }
-
-  input ReviewInput {
-    id: ID
-    body: String!
-  }
-
-  type ReviewCursor {
-    reviews: [Review!]!
-    cursor: String
-    hasMore: Boolean!
-  }
-
-  extend type Query {
-    reviews(
-      userId: ID
-      itemId: ID
-      itemType: ItemType
-      tvItemId: ID
-      tvItemType: TvItemType
-      cursor: String
-    ): ReviewCursor!
-  }
-`;

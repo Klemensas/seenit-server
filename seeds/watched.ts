@@ -1,8 +1,8 @@
 import * as Knex from 'knex';
 import * as seedrandom from 'seedrandom';
 
-import { Watched } from '../src/models/watched';
-import { User } from '../src/models/user';
+import { Watched } from '../src/models/watched/model';
+import { User } from '../src/models/user/model';
 import { pickItem } from './util/helpers';
 
 const rng = seedrandom('watched-seed');
