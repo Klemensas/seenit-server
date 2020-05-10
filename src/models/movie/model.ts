@@ -40,7 +40,6 @@ export type MovieStatus =
   | 'Released'
   | 'Canceled';
 
-// tslint:disable: variable-name
 export class Movie extends BaseModel {
   readonly id: string;
   title?: string;
@@ -69,7 +68,6 @@ export class Movie extends BaseModel {
   vote_count?: number;
   titleVector?: string;
 
-  // tslint:enable: variable-name
   tmdbId: number;
 
   watched?: Watched;
@@ -79,7 +77,7 @@ export class Movie extends BaseModel {
   static relationMappings = {
     watched: {
       relation: BaseModel.HasManyRelation,
-      modelClass: 'watched',
+      modelClass: '../watched/model',
       join: {
         from: 'Movie.id',
         to: 'Watched.itemId',

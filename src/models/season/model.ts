@@ -24,7 +24,7 @@ export class Season extends BaseModel {
   static relationMappings = {
     tv: {
       relation: BaseModel.BelongsToOneRelation,
-      modelClass: 'tv',
+      modelClass: '../tv/model',
       join: {
         from: 'Tv.id',
         to: 'Season.tvId',
@@ -32,7 +32,7 @@ export class Season extends BaseModel {
     },
     episodes: {
       relation: BaseModel.HasManyRelation,
-      modelClass: 'episode',
+      modelClass: '../episode/model',
       join: {
         from: 'Season.id',
         to: 'Episode.seasonId',

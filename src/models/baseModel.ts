@@ -1,3 +1,5 @@
+import { readdirSync } from 'fs';
+import { join } from 'path';
 import { Model, QueryContext } from 'objection';
 
 export class BaseModel extends Model {
@@ -10,7 +12,9 @@ export class BaseModel extends Model {
   updatedAt?: number;
 
   static get modelPaths() {
-    return [__dirname];
+    return readdirSync(__dirname, { withFileTypes: true })
+      .filter((item) => item.isDirectory())
+      .map((dir) => join(__dirname, dir.name));
   }
 
   $beforeValidate(jsonSchema) {

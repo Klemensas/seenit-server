@@ -61,7 +61,7 @@ export class Tv extends BaseModel {
   static relationMappings = {
     watched: {
       relation: BaseModel.HasManyRelation,
-      modelClass: 'watched',
+      modelClass: '../watched/model',
       join: {
         from: 'Tv.id',
         to: 'Watched.itemId',
@@ -77,7 +77,7 @@ export class Tv extends BaseModel {
     },
     seasons: {
       relation: BaseModel.HasManyRelation,
-      modelClass: 'season',
+      modelClass: '../season/model',
       join: {
         from: 'Tv.id',
         to: 'Season.tvId',
