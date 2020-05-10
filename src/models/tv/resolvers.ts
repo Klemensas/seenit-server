@@ -1,5 +1,4 @@
 import { UserInputError } from 'apollo-server-express';
-import { performance } from 'perf_hooks';
 
 import { Tv } from './model';
 import { getTvById } from './queries';
@@ -20,15 +19,7 @@ export const resolvers = {
     },
   },
   Tv: {
-    seasons: async (tv: Tv) => {
-      const t0 = performance.now();
-      const seasons = await getSeasonsByTvId(tv.id);
-      const t1 = performance.now();
-      console.log('Seasons took ' + (t1 - t0) + ' milliseconds.');
-
-      return seasons;
-    },
-
+    seasons: async (tv: Tv) => getSeasonsByTvId(tv.id),
     watched: async (tv, { cursor, filter }) => {
       const count = perPage;
       const query = filter ? getWatchedWithReviews : getPaginatedWatched;
@@ -38,7 +29,6 @@ export const resolvers = {
         { itemId: tv.id },
         { count, after: cursor },
       );
-
       const lastItem = results[results.length - 1] as any;
       const newCursor = lastItem ? lastItem.createdAt : undefined;
       const hasMore = total > count;
