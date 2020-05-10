@@ -1,64 +1,50 @@
 import { BaseModel } from '../baseModel';
 import { User } from '../user/model';
-import { Rating } from '../rating/model';
-import { Review } from '../review/model';
+import { ItemTypes, TvItemTypes } from '../../util/watchedItemHelper';
 import { Movie } from '../movie/model';
 import { Tv } from '../tv/model';
-
-import { Episode } from '../episode/model';
 import { Season } from '../season/model';
-import { ItemTypes, TvItemTypes } from '../../util/watchedItemHelper';
+import { Episode } from '../episode/model';
 
-export class Watched extends BaseModel {
+type AutoTrackedMeta = {
+  title?: string;
+  filename?: string;
+  url?: string;
+  provider: string;
+};
+
+export class AutoTracked extends BaseModel {
   readonly id: string;
-  tmdbId: number;
 
   userId?: string;
   user?: User;
 
-  itemType: ItemTypes;
-  itemId: string;
+  itemType?: ItemTypes;
+  itemId?: string;
   item?: Movie | Tv;
 
   tvItemType?: TvItemTypes;
   tvItemId?: string;
-  tvItem?: Season | Episode;
+  tvItem: Season | Episode;
 
-  rating?: Partial<Rating>;
-  review?: Partial<Review>;
+  meta: AutoTrackedMeta;
 
-  static tableName = 'Watched';
+  static tableName = 'AutoTracked';
 
   static relationMappings = {
     user: {
       relation: BaseModel.BelongsToOneRelation,
       modelClass: '../user/model',
       join: {
-        from: 'Watched.userId',
+        from: 'AutoTracked.userId',
         to: 'User.id',
-      },
-    },
-    rating: {
-      relation: BaseModel.HasOneRelation,
-      modelClass: '../rating/model',
-      join: {
-        from: 'Watched.id',
-        to: 'Rating.watchedId',
-      },
-    },
-    review: {
-      relation: BaseModel.HasOneRelation,
-      modelClass: '../review/model',
-      join: {
-        from: 'Watched.id',
-        to: 'Review.watchedId',
       },
     },
     movie: {
       relation: BaseModel.BelongsToOneRelation,
       modelClass: '../movie/model',
       join: {
-        from: 'Watched.itemId',
+        from: 'AutoTracked.itemId',
         to: 'Movie.id',
       },
     },
@@ -66,7 +52,7 @@ export class Watched extends BaseModel {
       relation: BaseModel.BelongsToOneRelation,
       modelClass: '../tv/model',
       join: {
-        from: 'Watched.itemId',
+        from: 'AutoTracked.itemId',
         to: 'Tv.id',
       },
     },
@@ -74,7 +60,7 @@ export class Watched extends BaseModel {
       relation: BaseModel.BelongsToOneRelation,
       modelClass: '../season/model',
       join: {
-        from: 'Watched.tvItemId',
+        from: 'AutoTracked.tvItemId',
         to: 'Season.id',
       },
     },
@@ -82,7 +68,7 @@ export class Watched extends BaseModel {
       relation: BaseModel.BelongsToOneRelation,
       modelClass: '../episode/model',
       join: {
-        from: 'Watched.tvItemId',
+        from: 'AutoTracked.tvItemId',
         to: 'Episode.id',
       },
     },
@@ -90,11 +76,9 @@ export class Watched extends BaseModel {
 
   static jsonSchema = {
     type: 'object',
-    required: ['itemId', 'userId'],
+    required: ['userId'],
 
     properties: {
-      id: { type: 'string' },
-      itemId: { type: 'string' },
       userId: { type: 'string' },
     },
   };
