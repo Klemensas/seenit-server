@@ -30,7 +30,7 @@ export class Review extends BaseModel {
   static relationMappings = {
     user: {
       relation: BaseModel.BelongsToOneRelation,
-      modelClass: 'user',
+      modelClass: '../user/model',
       join: {
         from: 'Review.id',
         to: 'User.id',
@@ -38,7 +38,7 @@ export class Review extends BaseModel {
     },
     movie: {
       relation: BaseModel.BelongsToOneRelation,
-      modelClass: 'movie',
+      modelClass: '../movie/model',
       join: {
         from: 'Review.itemId',
         to: 'Movie.id',
@@ -46,7 +46,7 @@ export class Review extends BaseModel {
     },
     tv: {
       relation: BaseModel.BelongsToOneRelation,
-      modelClass: 'tv',
+      modelClass: '../tv/model',
       join: {
         from: 'Review.itemId',
         to: 'Tv.id',
@@ -54,7 +54,7 @@ export class Review extends BaseModel {
     },
     season: {
       relation: BaseModel.BelongsToOneRelation,
-      modelClass: 'season',
+      modelClass: '../season/model',
       join: {
         from: 'Watched.tvItemId',
         to: 'Season.id',
@@ -62,7 +62,7 @@ export class Review extends BaseModel {
     },
     episode: {
       relation: BaseModel.BelongsToOneRelation,
-      modelClass: 'episode',
+      modelClass: '../episode/model',
       join: {
         from: 'Watched.tvItemId',
         to: 'Episode.id',

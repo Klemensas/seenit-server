@@ -32,7 +32,7 @@ export class Watched extends BaseModel {
   static relationMappings = {
     user: {
       relation: BaseModel.BelongsToOneRelation,
-      modelClass: 'user',
+      modelClass: '../user/model',
       join: {
         from: 'Watched.id',
         to: 'User.id',
@@ -40,7 +40,7 @@ export class Watched extends BaseModel {
     },
     rating: {
       relation: BaseModel.HasOneRelation,
-      modelClass: 'rating',
+      modelClass: '../rating/model',
       join: {
         from: 'Watched.id',
         to: 'Rating.watchedId',
@@ -48,7 +48,7 @@ export class Watched extends BaseModel {
     },
     review: {
       relation: BaseModel.HasOneRelation,
-      modelClass: 'review',
+      modelClass: '../review/model',
       join: {
         from: 'Watched.id',
         to: 'Review.watchedId',
@@ -56,7 +56,7 @@ export class Watched extends BaseModel {
     },
     movie: {
       relation: BaseModel.BelongsToOneRelation,
-      modelClass: 'movie',
+      modelClass: '../movie/model',
       join: {
         from: 'Watched.itemId',
         to: 'Movie.id',
@@ -64,7 +64,7 @@ export class Watched extends BaseModel {
     },
     tv: {
       relation: BaseModel.BelongsToOneRelation,
-      modelClass: 'tv',
+      modelClass: '../tv/model',
       join: {
         from: 'Watched.itemId',
         to: 'Tv.id',
@@ -72,7 +72,7 @@ export class Watched extends BaseModel {
     },
     season: {
       relation: BaseModel.BelongsToOneRelation,
-      modelClass: 'season',
+      modelClass: '../season/model',
       join: {
         from: 'Watched.tvItemId',
         to: 'Season.id',
@@ -80,7 +80,7 @@ export class Watched extends BaseModel {
     },
     episode: {
       relation: BaseModel.BelongsToOneRelation,
-      modelClass: 'episode',
+      modelClass: '../episode/model',
       join: {
         from: 'Watched.tvItemId',
         to: 'Episode.id',

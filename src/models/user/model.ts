@@ -15,7 +15,7 @@ export class User extends BaseModel {
   static relationMappings = {
     watched: {
       relation: BaseModel.HasManyRelation,
-      modelClass: 'watched',
+      modelClass: '../watched/model',
       join: {
         from: 'User.id',
         to: 'Watched.id',
