@@ -17,5 +17,6 @@ export const typeDefs = gql`
 
   extend type Query {
     season(id: ID): Season!
+    seasons(itemId: ID!): [Season!]!
   }
 `;

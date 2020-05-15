@@ -1,3 +1,5 @@
+import { transaction } from 'objection';
+
 import { AutoTracked } from './model';
 import {
   ItemTypes,
@@ -12,10 +14,13 @@ import { getUserById } from '../user/queries';
 import { isAuthenticated } from '../../apollo/helperResolvers';
 import {
   createAutoTracked,
-  getAutoTrackedById,
+  getAutoTrackedByIds,
   getPaginatedAutoTracked,
+  deleteAutoTracked,
 } from './queries';
 import { searchContent } from '../queries';
+import { createWatchedGraph } from '../watched/queries';
+import { knex } from '../../config';
 
 type AutoTrackedMetaTvData = {
   season?: number;
@@ -46,7 +51,11 @@ const autoTrackedListResolver = cursorListResolver(
 
 const resolvers = {
   Query: {
-    autoTracked: (parent, { id }) => getAutoTrackedById(id),
+    autoTracked: async (parent, { id }: { id: string }) => {
+      const results = await getAutoTrackedByIds([id]);
+
+      return results[0];
+    },
     autoTrackedList: (parent, { cursor, ...filters }) =>
       autoTrackedListResolver(filters, cursor),
   },
@@ -79,6 +88,63 @@ const resolvers = {
           meta,
           createdAt,
         });
+      },
+    ),
+    removeAutoTracked: isAuthenticated.createResolver(
+      async (parent, { ids }: { ids: Array<string> }, { user }) => {
+        const items = await getAutoTrackedByIds(ids);
+        const isOwner = !items.some(({ userId }) => userId !== user.id);
+
+        if (!isOwner) throw 'uh oh';
+
+        await deleteAutoTracked(ids);
+        return true;
+      },
+    ),
+    convertAutoTracked: isAuthenticated.createResolver(
+      async (parent, { ids }: { ids: Array<string> }, { user }) => {
+        const items = await getAutoTrackedByIds(ids).withGraphFetched(
+          '[movie, tv]',
+        );
+        const isOwner = !items.some(({ userId }) => userId !== user.id);
+        const hasItems = !items.some(({ movie, tv }) => !movie && !tv);
+
+        if (!isOwner) throw 'uh oh';
+        if (!hasItems) throw 'missing items';
+
+        const trx = await transaction.start(knex);
+        const createWatchedPromise = createWatchedGraph(
+          items.map(
+            ({
+              userId,
+              createdAt,
+              movie,
+              tv,
+              itemType,
+              itemId,
+              tvItemType,
+              tvItemId,
+            }) => ({
+              userId,
+              createdAt,
+              tmdbId: movie?.tmdbId || tv?.tmdbId,
+              itemType,
+              itemId,
+              tvItemType,
+              tvItemId,
+            }),
+          ),
+          trx,
+        );
+        const removeAutoTrackedPromsie = deleteAutoTracked(ids);
+
+        const [watched] = await Promise.all([
+          createWatchedPromise,
+          removeAutoTrackedPromsie,
+        ]);
+        await trx.commit();
+
+        return watched;
       },
     ),
   },

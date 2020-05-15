@@ -5,11 +5,18 @@ import { knex } from '../../config';
 import { AutoTracked } from './model';
 import { perPage } from '../../config/constants';
 
-export function getAutoTrackedById(
-  id: string,
+export function getAutoTrackedByIds(
+  id: string[],
   connection: Transaction | Knex = knex,
 ) {
-  return AutoTracked.query(connection).findById(id);
+  return AutoTracked.query(connection).findByIds(id);
+}
+
+export function deleteAutoTracked(
+  ids: string[],
+  connection: Transaction | Knex = knex,
+) {
+  return AutoTracked.query(connection).delete().whereIn('id', ids);
 }
 
 export function createAutoTracked(

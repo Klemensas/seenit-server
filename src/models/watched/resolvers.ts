@@ -13,7 +13,7 @@ import {
   getWatchedById,
   createWatchedGraph,
   upsertWatchedGraph,
-  deleteWatchedById,
+  deleteWatched,
 } from './queries';
 import { isAuthenticated } from '../../apollo/helperResolvers';
 import { User } from '../user/model';
@@ -148,7 +148,7 @@ export const resolvers = {
 
         if (!isOwner) throw 'uh oh';
 
-        await deleteWatchedById(watched.id);
+        await deleteWatched([watched.id]);
         return watched.id;
       },
     ),
