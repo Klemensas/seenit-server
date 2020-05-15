@@ -16,13 +16,15 @@ export class Watched extends BaseModel {
   userId?: string;
   user?: User;
 
-  itemType: ItemTypes;
-  itemId: string;
-  item?: Movie | Tv;
+  itemType?: ItemTypes;
+  itemId?: string;
+  movie?: Movie;
+  tv?: Tv;
 
   tvItemType?: TvItemTypes;
   tvItemId?: string;
-  tvItem?: Season | Episode;
+  season?: Season;
+  episode?: Episode;
 
   rating?: Partial<Rating>;
   review?: Partial<Review>;

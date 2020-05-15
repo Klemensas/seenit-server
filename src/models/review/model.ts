@@ -17,13 +17,15 @@ export class Review extends BaseModel {
   watchedId?: string;
   watched?: Watched;
 
-  itemType: ItemTypes;
-  itemId: string;
-  item?: Movie | Tv;
+  itemType?: ItemTypes;
+  itemId?: string;
+  movie?: Movie;
+  tv?: Tv;
 
   tvItemType?: TvItemTypes;
   tvItemId?: string;
-  tvItem?: Season | Episode;
+  season?: Season;
+  episode?: Episode;
 
   static tableName = 'Review';
 

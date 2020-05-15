@@ -16,16 +16,18 @@ type AutoTrackedMeta = {
 export class AutoTracked extends BaseModel {
   readonly id: string;
 
-  userId?: string;
+  userId: string;
   user?: User;
 
   itemType?: ItemTypes;
   itemId?: string;
-  item?: Movie | Tv;
+  movie?: Movie;
+  tv?: Tv;
 
   tvItemType?: TvItemTypes;
   tvItemId?: string;
-  tvItem: Season | Episode;
+  season?: Season;
+  episode?: Episode;
 
   meta: AutoTrackedMeta;
 
