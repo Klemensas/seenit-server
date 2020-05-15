@@ -1,5 +1,5 @@
 import * as Knex from 'knex';
-import { Transaction } from 'objection';
+import { Transaction, PartialModelGraph } from 'objection';
 
 import { knex } from '../../config';
 import { perPage } from '../../config/constants';
@@ -12,11 +12,11 @@ export function getWatchedById(
   return Watched.query(connection).findById(id);
 }
 
-export function deleteWatchedById(
-  id: string,
+export function deleteWatched(
+  ids: string[],
   connection: Transaction | Knex = knex,
 ) {
-  return Watched.query(connection).deleteById(id);
+  return Watched.query(connection).delete().whereIn('id', ids);
 }
 
 export function getPaginatedWatched(
@@ -27,14 +27,11 @@ export function getPaginatedWatched(
   },
   connection: Transaction | Knex = knex,
 ) {
-  return (
-    Watched.query(connection)
-      .where(where)
-      // .withGraphJoined('review', { joinOperation: 'innerJoin' })
-      .orderBy('Watched.createdAt', 'DESC')
-      .where('Watched.createdAt', '<', pagination.after)
-      .page(0, pagination.count)
-  );
+  return Watched.query(connection)
+    .where(where)
+    .orderBy('Watched.createdAt', 'DESC')
+    .where('Watched.createdAt', '<', pagination.after)
+    .page(0, pagination.count);
 }
 
 export async function getWatchedWithReviews(
@@ -63,7 +60,7 @@ export function createWatched(
 }
 
 export function createWatchedGraph(
-  watched: Partial<Watched>,
+  watched: PartialModelGraph<Watched, Watched[]>,
   connection: Transaction | Knex = knex,
 ) {
   return Watched.query(connection)

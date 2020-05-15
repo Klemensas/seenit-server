@@ -1,8 +1,14 @@
 import { gql } from 'apollo-server-express';
 
 export const typeDefs = gql`
+  type AutoTrackedMetaTvData {
+    season: String
+    episode: String
+  }
+
   type AutoTrackedMeta {
     title: String
+    tvData: AutoTrackedMetaTvData
     filename: String
     url: String
     provider: String!
@@ -55,5 +61,7 @@ export const typeDefs = gql`
       tvItemId: ID
       tvItemType: TvItemType
     ): AutoTracked!
+    removeAutoTracked(ids: [ID!]!): Boolean
+    convertAutoTracked(ids: [ID!]!): [Watched!]!
   }
 `;
