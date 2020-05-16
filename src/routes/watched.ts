@@ -30,7 +30,7 @@ export class WatchedRouter extends BaseRouter {
           }
         : null;
 
-      const watched = await watchedQueries.createWatchedGraph({
+      const watched = await watchedQueries.createWatchedItemGraph({
         userId,
         rating,
         review,

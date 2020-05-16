@@ -1,5 +1,5 @@
 import * as Knex from 'knex';
-import { Transaction, PartialModelGraph } from 'objection';
+import { Transaction, PartialModelGraph, InsertGraphMethod } from 'objection';
 
 import { knex } from '../../config';
 import { perPage } from '../../config/constants';
@@ -59,8 +59,8 @@ export function createWatched(
   return Watched.query(connection).insert(watched);
 }
 
-export function createWatchedGraph(
-  watched: PartialModelGraph<Watched, Watched[]>,
+export function createWatchedItemGraph(
+  watched: Partial<Watched>,
   connection: Transaction | Knex = knex,
 ) {
   return Watched.query(connection)
@@ -68,8 +68,26 @@ export function createWatchedGraph(
     .insertGraph(watched);
 }
 
-export function upsertWatchedGraph(
+export function createWatchedListGraph(
+  watched: Partial<Watched>[],
+  connection: Transaction | Knex = knex,
+) {
+  return Watched.query(connection)
+    .allowGraph('[review, rating]')
+    .insertGraph(watched);
+}
+
+export function upsertWatchedItemGraph(
   watched: Partial<Watched>,
+  connection: Transaction | Knex = knex,
+) {
+  return Watched.query(connection)
+    .allowGraph('[review, rating]')
+    .upsertGraphAndFetch(watched);
+}
+
+export function upsertWatchedListGraph(
+  watched: Partial<Watched>[],
   connection: Transaction | Knex = knex,
 ) {
   return Watched.query(connection)
