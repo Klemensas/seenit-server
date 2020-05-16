@@ -19,7 +19,7 @@ import {
   deleteAutoTracked,
 } from './queries';
 import { searchContent } from '../queries';
-import { createWatchedGraph } from '../watched/queries';
+import { createWatchedListGraph } from '../watched/queries';
 import { knex } from '../../config';
 
 type AutoTrackedMetaTvData = {
@@ -113,7 +113,7 @@ const resolvers = {
         if (!hasItems) throw 'missing items';
 
         const trx = await transaction.start(knex);
-        const createWatchedPromise = createWatchedGraph(
+        const createWatchedPromise = createWatchedListGraph(
           items.map(
             ({
               userId,

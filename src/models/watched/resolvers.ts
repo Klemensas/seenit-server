@@ -11,8 +11,8 @@ import { getMovieById } from '../movie/queries';
 import {
   getPaginatedWatched,
   getWatchedById,
-  createWatchedGraph,
-  upsertWatchedGraph,
+  createWatchedItemGraph,
+  upsertWatchedItemGraph,
   deleteWatched,
 } from './queries';
 import { isAuthenticated } from '../../apollo/helperResolvers';
@@ -93,7 +93,7 @@ export const resolvers = {
               userId,
             }
           : null;
-        return createWatchedGraph({
+        return createWatchedItemGraph({
           ...itemData,
           userId,
           rating: ratingItem,
@@ -115,7 +115,7 @@ export const resolvers = {
 
         if (!isOwner) throw 'uh oh';
 
-        return upsertWatchedGraph({
+        return upsertWatchedItemGraph({
           id,
           createdAt,
           tvItemId,
