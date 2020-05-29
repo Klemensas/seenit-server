@@ -75,7 +75,7 @@ export const serviceTypeDefs = gql`
     tmdbId: Int!
     title: String!
     release_date: String
-    type: TmdbMediaType
+    type: ItemType
   }
   # type TmdbSearch {
   #   results: [TmdbMedia!]

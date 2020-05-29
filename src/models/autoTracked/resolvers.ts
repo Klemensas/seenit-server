@@ -98,7 +98,7 @@ const resolvers = {
         if (!isOwner) throw 'uh oh';
 
         await deleteAutoTracked(ids);
-        return true;
+        return ids;
       },
     ),
     convertAutoTracked: isAuthenticated.createResolver(
@@ -144,7 +144,10 @@ const resolvers = {
         ]);
         await trx.commit();
 
-        return watched;
+        return {
+          removedIds: ids,
+          watched,
+        };
       },
     ),
   },

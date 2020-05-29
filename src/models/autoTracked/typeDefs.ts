@@ -47,6 +47,11 @@ export const typeDefs = gql`
     hasMore: Boolean!
   }
 
+  type ConvertedAutoTracked {
+    removedIds: [ID!]!
+    watched: [Watched!]!
+  }
+
   extend type Query {
     autoTrackedList(userId: ID!, cursor: String): AutoTrackedCursor!
     autoTracked(id: ID!): AutoTracked!
@@ -61,7 +66,7 @@ export const typeDefs = gql`
       tvItemId: ID
       tvItemType: TvItemType
     ): AutoTracked!
-    removeAutoTracked(ids: [ID!]!): Boolean
-    convertAutoTracked(ids: [ID!]!): [Watched!]!
+    removeAutoTracked(ids: [ID!]!): [ID!]!
+    convertAutoTracked(ids: [ID!]!): ConvertedAutoTracked!
   }
 `;
