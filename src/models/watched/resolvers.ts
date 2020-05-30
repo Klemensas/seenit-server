@@ -22,6 +22,9 @@ import { getEpisodeById } from '../episode/queries';
 import { getUserById } from '../user/queries';
 import { getReviewByWatched } from '../review/queries';
 import { getRatingByWatched } from '../rating/queries';
+import { transaction } from 'objection';
+import { knex } from '../../config';
+import { deleteAutoTracked } from '../autoTracked/queries';
 
 interface AddWatchedPayload {
   itemId: string;
@@ -31,6 +34,7 @@ interface AddWatchedPayload {
   review?: Pick<Review, 'body'>;
   tvItemId?: string;
   tvItemType?: TvItemTypes;
+  autoTrackedId?: string;
 }
 
 const itemLoaders = {
@@ -67,6 +71,7 @@ export const resolvers = {
           createdAt,
           tvItemId,
           tvItemType,
+          autoTrackedId,
         }: AddWatchedPayload,
         { user }: { user: User },
       ) => {
@@ -93,13 +98,24 @@ export const resolvers = {
               userId,
             }
           : null;
-        return createWatchedItemGraph({
-          ...itemData,
-          userId,
-          rating: ratingItem,
-          review: reviewItem,
-          createdAt,
-        });
+
+        const trx = await transaction.start(knex);
+        const [watched] = await Promise.all([
+          createWatchedItemGraph(
+            {
+              ...itemData,
+              userId,
+              rating: ratingItem,
+              review: reviewItem,
+              createdAt,
+            },
+            trx,
+          ),
+          autoTrackedId ? deleteAutoTracked([autoTrackedId], trx) : undefined,
+        ]);
+        await trx.commit();
+
+        return watched;
       },
     ),
     editWatched: isAuthenticated.createResolver(

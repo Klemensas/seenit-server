@@ -57,6 +57,7 @@ export const typeDefs = gql`
       createdAt: Float
       tvItemId: ID
       tvItemType: TvItemType
+      autoTrackedId: ID
     ): Watched!
     editWatched(
       id: ID!
