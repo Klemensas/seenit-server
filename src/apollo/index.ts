@@ -1,6 +1,8 @@
 import * as express from 'express';
 import { ApolloServer, AuthenticationError } from 'apollo-server-express';
 import { mergeDeep } from 'apollo-utilities';
+import { buildContext } from 'graphql-passport';
+import * as cors from 'cors';
 
 import { typeDefs as watchedTypeDefs } from '../models/watched/typeDefs';
 import { resolvers as watchedResolvers } from '../models/watched/resolvers';
@@ -53,25 +55,43 @@ export function initializeApolloServer(app: express.Express) {
       reviewResolvers,
       autoTrackedResolvers,
     ),
-    context: async ({ req, res }) => {
-      if (req) {
-        if (req.headers.authorization) {
-          const token =
-            req.headers.authorization.indexOf('Bearer ') === 0
-              ? req.headers.authorization.slice(7)
-              : null;
-          try {
-            const user = await Auth.getUserFromToken(token);
-            return { user };
-          } catch (err) {
-            throw new AuthenticationError('Invalid token. Sign in again.');
-          }
-        }
-      }
-    },
+    context: ({ req, res }) => buildContext({ req, res }),
+    // context: async ({ req, res }) => {
+    //   if (req) {
+    //     let user;
+
+    //     if (req.headers.authorization) {
+    //       const token =
+    //         req.headers.authorization.indexOf('Bearer ') === 0
+    //           ? req.headers.authorization.slice(7)
+    //           : null;
+    //       try {
+    //         user = await Auth.getUserFromToken(token);
+    //       } catch (err) {
+    //         throw new AuthenticationError('Invalid token. Sign in again.');
+    //       }
+    //     }
+
+    //     return {
+    //       user,
+    //       login: req.login,
+    //     };
+    //   }
+    // },
     tracing: config.env !== 'production',
+    playground: {
+      settings: {
+        'request.credentials': 'same-origin',
+      },
+    },
   });
 
-  apolloServer.applyMiddleware({ app });
+  apolloServer.applyMiddleware({
+    app,
+    cors: {
+      origin: 'http://localhost:3000',
+      credentials: true,
+    },
+  });
   return apolloServer;
 }

@@ -21,13 +21,16 @@
     "body-parser": "^1.18.3",
     "bunyan": "^1.8.12",
     "compression": "^1.7.3",
+    "cors": "^2.8.5",
     "cross-spawn": "^7.0.2",
     "debug": "^4.1.1",
     "dotenv": "^8.2.0",
     "errorhandler": "^1.5.0",
     "express": "^4.17.1",
     "express-limiter": "^1.6.1",
+    "express-session": "^1.17.1",
     "graphql": "^14.6.0",
+    "graphql-passport": "^0.6.3",
     "jest": "^26.0.1",
     "jsonwebtoken": "^8.3.0",
     "knex": "^0.21.1",
@@ -37,8 +40,10 @@
     "passport": "^0.4.1",
     "passport-http-bearer": "^1.0.1",
     "passport-local": "^1.0.0",
+    "passport-oauth2-refresh": "^2.0.0",
     "pg": "^8.2.1",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "uuid": "^8.1.0"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",

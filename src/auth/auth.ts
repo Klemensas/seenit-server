@@ -3,6 +3,7 @@ import * as jwt from 'jsonwebtoken';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as BearerStrategy } from 'passport-http-bearer';
 import * as bcrypt from 'bcrypt';
+import { GraphQLLocalStrategy } from 'graphql-passport';
 
 import { getUserById, getFullUser } from '../models/user/queries';
 import { User } from '../models/user/model';
@@ -45,6 +46,23 @@ export class Auth {
     const tokenData = jwt.verify(token, config.secrets.session) as any;
     const user = await getUserById(tokenData.id);
     return user;
+  }
+
+  static init() {
+    passport.serializeUser((user: User, done) => {
+      console.error('usssr');
+      done(null, user.id);
+    });
+
+    passport.deserializeUser(async (id: string, done) => {
+      console.error('usssr', id);
+      const user = await getUserById(id);
+      done(null, user);
+    });
+
+    // this.useLocalStrategy();
+    this.useGraphQLLocalStrategy();
+    this.useBearerStrategy();
   }
 
   /**
@@ -95,6 +113,30 @@ export class Auth {
           .then((user) => done(null, user))
           .catch((error) => done(new AuthError(error.message), false)),
       ),
+    );
+  }
+
+  static useGraphQLLocalStrategy() {
+    passport.use(
+      new GraphQLLocalStrategy(async (email, password, done) => {
+        const user = await getFullUser({ email });
+
+        if (!user) {
+          return done('User not found', false);
+        }
+
+        const authorized = await this.comparePasswords(password, user.password);
+
+        if (!authorized) {
+          return done('User not found', false);
+        }
+
+        const cleanUser = { ...user };
+        delete cleanUser.password;
+        delete cleanUser.salt;
+
+        return done(null, cleanUser);
+      }),
     );
   }
 }

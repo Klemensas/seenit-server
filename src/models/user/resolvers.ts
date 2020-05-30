@@ -22,23 +22,18 @@ export const resolvers = {
 
       return { token: Auth.signToken(user) };
     },
-    login: async (parent, { email, password }) => {
-      const user = await getFullUser({ email });
+    login: async (parent, { email, password }, context) => {
+      console.error('owowo');
+      const { user, ...dat } = await context.authenticate('graphql-local', {
+        email,
+        password,
+      });
 
-      if (!user) {
-        throw new UserInputError('No user found with this login credentials.');
-      }
+      const log = await context.login(user);
 
-      const isValid = await Auth.comparePasswords(password, user.password);
+      console.error('uuu', user, log, dat);
 
-      if (!isValid) {
-        throw new AuthenticationError('Invalid password.');
-      }
-
-      const cleanUser = { ...user };
-      delete cleanUser.password;
-      delete cleanUser.salt;
-      return { token: Auth.signToken(user), user: cleanUser };
+      return { user, token: '' };
     },
   },
   User: {

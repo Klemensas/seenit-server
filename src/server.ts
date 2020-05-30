@@ -8,7 +8,8 @@ import * as bodyParser from 'body-parser';
 import * as passport from 'passport';
 import * as errorHandler from 'errorhandler';
 import { ApolloServer } from 'apollo-server-express';
-// // import morgan = require('morgan');
+import * as session from 'express-session';
+import { v4 as uuid } from 'uuid';
 import dotenv = require('dotenv');
 
 import { config } from './config';
@@ -19,6 +20,8 @@ import { Auth } from './auth/auth';
 import { initializeApolloServer } from './apollo';
 
 dotenv.config();
+
+const SESSION_SECRECT = 'bad secret';
 
 function setupHttp(app: express.Express) {
   return http.createServer(app).listen(config.port);
@@ -39,8 +42,8 @@ export class Server {
   public static async initializeApp(): Promise<http.Server | https.Server> {
     try {
       Server.app = express();
-      Server.configureApp();
       Server.initializeAuth();
+      Server.configureApp();
 
       Router.initializeRoutes(Server.app);
       Server.app.use(errorHandler);
@@ -57,19 +60,33 @@ export class Server {
   }
 
   private static initializeAuth() {
+    Server.app.use(
+      session({
+        genid: (req) => {
+          const id = uuid();
+          console.error('ddd', id);
+          return id;
+        },
+        secret: SESSION_SECRECT,
+        resave: false,
+        saveUninitialized: false,
+        cookie: { secure: false, httpOnly: false },
+      }),
+    );
     Server.app.use(passport.initialize());
-    Server.app.use(passport.initialize());
-    Auth.useLocalStrategy();
-    Auth.useBearerStrategy();
+    Server.app.use(passport.session());
+    Auth.init();
   }
 
   private static configureApp() {
+    // console.error('cc', cors);
     Server.app.use(bodyParser.urlencoded({ extended: true }));
     Server.app.use(bodyParser.json());
     // @ts-ignore TODO: figure this out
     Server.app.use(compression());
     // @ts-ignore TODO: figure this out
     Server.app.use(morgan('dev'));
+    // Server.app.use(cors());
     initializeApolloServer(Server.app);
   }
 }

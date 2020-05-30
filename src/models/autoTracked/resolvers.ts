@@ -56,8 +56,10 @@ const resolvers = {
 
       return results[0];
     },
-    autoTrackedList: (parent, { cursor, ...filters }) =>
-      autoTrackedListResolver(filters, cursor),
+    autoTrackedList: (parent, { cursor, ...filters }, context) => {
+      console.error('pspsps', context.getUser());
+      return autoTrackedListResolver(filters, cursor);
+    },
   },
   Mutation: {
     addAutoTracked: isAuthenticated.createResolver(
