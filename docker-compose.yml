@@ -5,6 +5,7 @@ postgres-data:
 
 # a postgres container for providing database access.
 postgres:
+  container_name: seenit_postgres
   image: sameersbn/postgresql:10-2
   environment:
     - DB_USER=screen
