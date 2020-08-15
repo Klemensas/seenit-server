@@ -22,8 +22,8 @@ export const typeDefs = gql`
     # salt: String!
     createdAt: Float!
     updatedAt: Float!
-    # watched(cursor: String): [Watched!]
     watched(cursor: String): WatchedCursor!
+    settings: Settings!
   }
   type LocalAuth {
     user: User!

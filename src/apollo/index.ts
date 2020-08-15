@@ -16,6 +16,8 @@ import { typeDefs as episodeTypeDefs } from '../models/episode/typeDefs';
 import { resolvers as episodeResolvers } from '../models/episode/resolvers';
 import { typeDefs as ratingTypeDefs } from '../models/rating/typeDefs';
 import { typeDefs as reviewTypeDefs } from '../models/review/typeDefs';
+import { resolvers as settingsResolvers } from '../models/settings/resolvers';
+import { typeDefs as settingsTypeDefs } from '../models/settings/typeDefs';
 import reviewResolvers from '../models/review/resolvers';
 import { typeDefs as autoTrackedTypeDefs } from '../models/autoTracked/typeDefs';
 import autoTrackedResolvers from '../models/autoTracked/resolvers';
@@ -40,6 +42,7 @@ export function initializeApolloServer(app: express.Express) {
       ratingTypeDefs,
       reviewTypeDefs,
       autoTrackedTypeDefs,
+      settingsTypeDefs,
     ],
     // TODO: mergeDeep is apollo internal method, investigate use of array. Alternative solution is using makeExecutableSchema
     resolvers: mergeDeep(
@@ -52,6 +55,7 @@ export function initializeApolloServer(app: express.Express) {
       episodeResolvers,
       reviewResolvers,
       autoTrackedResolvers,
+      settingsResolvers,
     ),
     context: async ({ req, res }) => {
       if (req) {

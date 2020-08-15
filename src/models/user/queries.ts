@@ -46,3 +46,12 @@ export function createUser(
 ) {
   return User.query(connection).insert(user);
 }
+
+export function insertUserGraph(
+  user: Partial<User>,
+  connection: Transaction | Knex = knex,
+) {
+  return User.query(connection)
+    .allowGraph('[settings]')
+    .insertGraphAndFetch(user);
+}

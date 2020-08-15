@@ -5,7 +5,7 @@ export const typeDefs = gql`
     id: ID!
     name: String!
     overview: String!
-    air_date: String!
+    air_date: String
     episode_count: Int!
     poster_path: String
     season_number: Int!
