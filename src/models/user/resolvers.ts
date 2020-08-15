@@ -1,9 +1,12 @@
 import { UserInputError, AuthenticationError } from 'apollo-server-express';
 
 import { isAuthenticated } from '../../apollo/helperResolvers';
-import { getUsers, getUser, createUser, getFullUser } from './queries';
+import { getUsers, getUser, insertUserGraph, getFullUser } from './queries';
 import { Auth } from '../../auth/auth';
 import { watchedResolver } from '../watched/resolvers';
+import { getSettings } from '../settings/queries';
+import { User } from './model';
+import { Settings } from '../settings/model';
 
 export const resolvers = {
   Query: {
@@ -11,13 +14,26 @@ export const resolvers = {
     user: (parent, { id, name }) => {
       return getUser(name ? { name } : { id });
     },
+    me: isAuthenticated.createResolver((parent, args, { user }) =>
+      getUser({ id: user.id }),
+    ),
   },
   Mutation: {
     register: async (parent, { name, email, password }) => {
-      const user = await createUser({
+      const user = await insertUserGraph({
         name,
         email,
         password,
+        settings: {
+          general: {
+            autoConvert: false,
+          },
+          extension: {
+            autoTrack: false,
+            minLengthSeconds: 360,
+            blacklist: [],
+          },
+        } as Settings,
       });
 
       return { token: Auth.signToken(user) };
@@ -42,8 +58,8 @@ export const resolvers = {
     },
   },
   User: {
-    watched: async (user, { cursor }) => {
-      return watchedResolver({ userId: user.id }, cursor);
-    },
+    watched: async (user, { cursor }) =>
+      watchedResolver({ userId: user.id }, cursor),
+    settings: (user) => getSettings(user.id),
   },
 };
