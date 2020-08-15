@@ -10,7 +10,8 @@
     "migrate:latest": "knex migrate:latest",
     "migrate:rollback": "knex migrate:rollback",
     "tsc": "tsc",
-    "lint": "eslint . --ext .js,.ts"
+    "lint": "eslint . --ext .js,.ts",
+    "scripts:sync": "tsnd  -r dotenv/config --no-notify --transpile-only ./scripts/sync-shows"
   },
   "dependencies": {
     "apollo-resolvers": "^1.4.2",
