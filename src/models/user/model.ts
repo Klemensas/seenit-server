@@ -2,6 +2,8 @@ import * as bcrypt from 'bcrypt';
 import { QueryContext } from 'objection';
 
 import { BaseModel } from '../baseModel';
+import { Settings } from '../settings/model';
+import { Watched } from '../watched/model';
 
 export class User extends BaseModel {
   readonly id: string;
@@ -9,6 +11,9 @@ export class User extends BaseModel {
   email: string;
   password: string;
   salt: string;
+
+  watched: Watched[];
+  settings: Settings;
 
   static tableName = 'User';
 
@@ -19,6 +24,14 @@ export class User extends BaseModel {
       join: {
         from: 'User.id',
         to: 'Watched.id',
+      },
+    },
+    settings: {
+      relation: BaseModel.HasOneRelation,
+      modelClass: '../settings/model',
+      join: {
+        from: 'User.id',
+        to: 'Settings.id',
       },
     },
   };
