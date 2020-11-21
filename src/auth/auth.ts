@@ -2,12 +2,18 @@ import * as passport from 'passport';
 import * as jwt from 'jsonwebtoken';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as BearerStrategy } from 'passport-http-bearer';
+import { Strategy as CookieStrategy } from 'passport-cookie';
 import * as bcrypt from 'bcrypt';
 
 import { getUserById, getFullUser } from '../models/user/queries';
 import { User } from '../models/user/model';
 import { config } from '../config';
 import { AuthError } from '../errors/authError';
+import {
+  getRefreshToken,
+  createRefreshToken,
+} from '../models/refreshToken/queries';
+import { Response } from 'express';
 
 export class Auth {
   static async comparePasswords(
@@ -21,7 +27,10 @@ export class Auth {
     return bcrypt.compare(pass1, pass2);
   }
 
-  static signToken({ id, email }: User) {
+  static signToken(
+    { id, email }: Pick<User, 'id' | 'email'>,
+    isRefreshToken = false,
+  ) {
     return jwt.sign(
       {
         id,
@@ -29,7 +38,9 @@ export class Auth {
       },
       config.secrets.session,
       {
-        expiresIn: config.sessionLength,
+        expiresIn: isRefreshToken
+          ? config.session.refreshSeconds
+          : config.session.jwtSeconds,
       },
     );
   }
@@ -41,19 +52,36 @@ export class Auth {
     });
   }
 
+  static hasRefreshToken() {
+    return passport.authenticate('cookie', {
+      session: false,
+    });
+  }
+
+  static async createTokens(
+    { id, email }: Pick<User, 'id' | 'email'>,
+    res: Response,
+  ) {
+    const token = Auth.signToken({ id, email });
+    const refreshToken = Auth.signToken({ id, email }, true);
+    await createRefreshToken(refreshToken);
+
+    res.cookie('token', token, {
+      path: '/auth',
+      signed: true,
+      httpOnly: true,
+      // maxAge: 10000,
+    });
+
+    return { token, refreshToken };
+  }
+
   static async getUserFromToken(token: string) {
     const tokenData = jwt.verify(token, config.secrets.session) as any;
     const user = await getUserById(tokenData.id);
     return user;
   }
 
-  /**
-   * LocalStrategy
-   *
-   * This strategy is used to authenticate users based on a username and password.
-   * Anytime a request is made to authorize an application, we must ensure that
-   * a user is logged in before asking them to approve the request.
-   */
   static useLocalStrategy() {
     passport.use(
       new LocalStrategy(
@@ -80,14 +108,6 @@ export class Auth {
     );
   }
 
-  /**
-   * BearerStrategy
-   *
-   * This strategy is used to authenticate users based on an access token (aka a
-   * bearer token).  The user must have previously authorized a client
-   * application, which is issued an access token to make requests on behalf of
-   * the authorizing user.
-   */
   static useBearerStrategy() {
     passport.use(
       new BearerStrategy((token, done) =>
@@ -95,6 +115,22 @@ export class Auth {
           .then((user) => done(null, user))
           .catch((error) => done(new AuthError(error.message), false)),
       ),
+    );
+  }
+
+  static useCookieStrategy() {
+    passport.use(
+      new CookieStrategy({ signed: true }, async (token, done) => {
+        try {
+          const storedToken = await getRefreshToken(token);
+          const user = await this.getUserFromToken(storedToken.token);
+
+          return done(null, user);
+        } catch (error) {
+          console.error('ohohoho', error);
+          done(new AuthError(error.message), false);
+        }
+      }),
     );
   }
 }

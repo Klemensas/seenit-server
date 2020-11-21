@@ -17,6 +17,10 @@ module.exports = {
   secrets: {
     session: process.env.APP_SECRET || 'secret',
   },
+  session: {
+    jwtSeconds: 9000,
+    refreshSeconds: 604800,
+  },
   sessionLength: process.env.SESSION_LENGTH || 18000,
   knex: {
     options: {

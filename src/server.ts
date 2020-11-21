@@ -5,8 +5,10 @@ import * as fs from 'fs';
 import * as compression from 'compression';
 import * as morgan from 'morgan';
 import * as bodyParser from 'body-parser';
+import * as cookieParser from 'cookie-parser';
 import * as passport from 'passport';
 import * as errorHandler from 'errorhandler';
+import * as cors from 'cors';
 import { ApolloServer } from 'apollo-server-express';
 // // import morgan = require('morgan');
 import dotenv = require('dotenv');
@@ -58,14 +60,16 @@ export class Server {
 
   private static initializeAuth() {
     Server.app.use(passport.initialize());
-    Server.app.use(passport.initialize());
     Auth.useLocalStrategy();
     Auth.useBearerStrategy();
+    Auth.useCookieStrategy();
   }
 
   private static configureApp() {
     Server.app.use(bodyParser.urlencoded({ extended: true }));
     Server.app.use(bodyParser.json());
+    Server.app.use(cookieParser(config.secrets.session));
+    Server.app.use(cors());
     // @ts-ignore TODO: figure this out
     Server.app.use(compression());
     // @ts-ignore TODO: figure this out
