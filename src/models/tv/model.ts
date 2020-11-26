@@ -93,7 +93,10 @@ export class Tv extends BaseModel {
     json = super.$formatDatabaseJson(json);
 
     if (json.name) {
-      json.titleVector = knex.raw(`to_tsvector(?)`, json.name);
+      json.titleVector = knex.raw(
+        `to_tsvector('english_nostop', ?)`,
+        json.name,
+      );
     }
 
     return json;

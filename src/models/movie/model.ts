@@ -101,7 +101,10 @@ export class Movie extends BaseModel {
     json = super.$formatDatabaseJson(json);
 
     if (json.title) {
-      json.titleVector = knex.raw(`to_tsvector(?)`, json.title);
+      json.titleVector = knex.raw(
+        `to_tsvector('english_nostop', ?)`,
+        json.title,
+      );
     }
 
     return json;
