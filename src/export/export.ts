@@ -8,13 +8,20 @@ const app = express();
 
 app.get('/export', async (req, res) => {
   const count = await Tv.query().count();
-  res.json({
-    count,
-    export: dailyExport.exportJob,
-  });
+  res.setHeader('Content-Type', 'application/json');
+  res.end(
+    JSON.stringify(
+      {
+        count,
+        export: dailyExport.exportJob,
+      },
+      null,
+      2,
+    ),
+  );
 });
 
 app.listen(config.port);
 
-const date = new Date('2019-09-06');
+const date = new Date(Date.now() - 86400000);
 export default dailyExport.loadDailies(date, true);
