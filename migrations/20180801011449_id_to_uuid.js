@@ -33,6 +33,7 @@ exports.up = function (knex) {
     .alterTable('Watched', (table) => {
       table.uuid('id').defaultTo(knex.raw('uuid_generate_v4()')).primary();
       table.uuid('userId').references('id').inTable('User').onDelete('CASCADE');
+      table.uuid('itemId');
       table
         .foreign('itemId')
         .onDelete('CASCADE')
@@ -72,11 +73,5 @@ exports.up = function (knex) {
 };
 
 exports.down = function (knex) {
-  return knex.schema
-    .dropTableIfExists('Movie')
-    .dropTableIfExists('Tv')
-    .dropTableIfExists('Review')
-    .dropTableIfExists('Rating')
-    .dropTableIfExists('Watched')
-    .dropTableIfExists('User');
+  // TODO: merge old migrations to avoid complex logic here
 };
