@@ -172,7 +172,6 @@ exports.up = function (knex) {
         .foreign('tvItemId')
         .onDelete('CASCADE')
         .references(['Season.id', 'Episode.id']);
-
     })
     .createTable('DailyChanges', (table) => {
       table.increments('id').primary();
@@ -201,7 +200,7 @@ exports.up = function (knex) {
       table.uuid('id').defaultTo(knex.raw('uuid_generate_v4()')).primary();
       table.text('name');
       table.text('overview');
-      table.integer('episode_number');
+      table.bigInteger('episode_number');
       table.bigInteger('air_date').unsigned();
       table.string('production_code');
       table.string('still_path');

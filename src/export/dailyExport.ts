@@ -17,26 +17,19 @@ export enum ExportPaths {
 }
 
 export interface ExportState {
-  total: number;
   movie: number;
   tv: number;
 }
 
 export interface ExportJob {
+  fileSize: ExportState;
   size: ExportState;
   progress: ExportState;
+  filteredItems: ExportState;
+  estimatedRemainingMinutes: ExportState;
   start: Date;
   skipStored: boolean;
   skippedLines: number;
-  averageTime: number;
-  itemsStored: number;
-  longestItem: LongestItem;
-}
-
-export interface LongestItem {
-  time: number;
-  id: number;
-  type: MediaType;
 }
 
 export class DailyExports {
@@ -47,15 +40,7 @@ export class DailyExports {
 
   isRunning = false;
   exportJob: ExportJob = null;
-
-  get totalDone() {
-    return this.exportJob.progress.total / this.exportJob.size.total;
-  }
-
-  get estimate() {
-    const timePast = Date.now() - +this.exportJob.start;
-    return ((1 / this.totalDone) * timePast) / 1000;
-  }
+  storedBatch: number[] = [];
 
   async loadDailies(date: Date, skipStored?: boolean) {
     this.isRunning = true;
@@ -67,26 +52,28 @@ export class DailyExports {
       DailyExports.fileSize(DailyExports.filePath.movie),
       DailyExports.fileSize(DailyExports.filePath.tv),
     ]);
-    const total = movie + tv;
 
     this.exportJob = {
-      size: {
-        total,
+      fileSize: {
         movie,
         tv,
       },
-      progress: {
-        total: 0,
+      size: {
         movie: 0,
         tv: 0,
       },
-      longestItem: {
-        id: null,
-        time: null,
-        type: null,
+      estimatedRemainingMinutes: {
+        movie: Infinity,
+        tv: Infinity,
       },
-      itemsStored: 0,
-      averageTime: 0,
+      progress: {
+        movie: 0,
+        tv: 0,
+      },
+      filteredItems: {
+        movie: 0,
+        tv: 0,
+      },
       skipStored,
       skippedLines: 0,
       start: new Date(),
@@ -96,33 +83,30 @@ export class DailyExports {
       DailyExports.filePath.movie,
       Movie,
       this.parseLine('movie'),
-    );
+    ).then(() => this.handleBatches('movie'));
     await this.readFileLines(
       DailyExports.filePath.tv,
       Tv,
       this.parseLine('tv'),
-    );
+    ).then(() => this.handleBatches('tv'));
     await Promise.all([
-      new Promise((resolve) =>
+      new Promise<void>((resolve) =>
         fs.unlink(DailyExports.filePath.movie, () => resolve()),
       ),
-      new Promise((resolve) =>
+      new Promise<void>((resolve) =>
         fs.unlink(DailyExports.filePath.tv, () => resolve()),
       ),
     ]);
     this.isRunning = false;
+
+    console.log('ALL DONE', JSON.stringify(this.exportJob, null, 2));
+    process.exit();
   }
 
   parseLine(type: MediaType) {
-    let remainingRequests = null;
-
     return async (line: string, reader: any, stored: Set<number>) => {
       try {
-        const itemStart = new Date();
         const parsedData = JSON.parse(line);
-        const lineLength = DailyExports.getBinarySize(line) + 1;
-        this.exportJob.progress[type] += lineLength;
-        this.exportJob.progress.total += lineLength;
 
         if (parsedData.adult) return;
 
@@ -135,57 +119,58 @@ export class DailyExports {
           }
         }
 
-        reader.pause();
-        const {
-          data,
-          remainingLimit,
-          nextBatch,
-        } = await DailyExports.fetchItemWithDeletion(parsedData.id, type);
-        remainingRequests = remainingLimit;
-
-        if (!data) {
-          reader.resume();
-          return;
-        }
-
-        await this.storeBatch([data], type);
-        const itemEnd = new Date();
-        this.exportJob.itemsStored++;
-        this.exportJob.averageTime =
-          (+itemEnd - +this.exportJob.start) / this.exportJob.itemsStored;
-
-        if (!isNaN(remainingLimit) && !remainingLimit) {
-          await new Promise((resolve) =>
-            setTimeout(
-              resolve,
-              (nextBatch - Math.floor(Date.now() / 1000)) * 1000 + 1000,
-            ),
-          );
-        }
-
-        this.updateLongest({
-          type,
-          id: parsedData.id,
-          time: +itemEnd - +itemStart,
-        });
-        reader.resume();
-        return;
+        this.storedBatch.push(parsedData.id);
+        this.exportJob.size[type]++;
       } catch (err) {
         await logError(
           `${err.toString()}-${
             err.response ? JSON.stringify(err.response.headers) : ''
-          }-${remainingRequests}`,
+          }`,
         );
         process.exit(1);
       }
     };
   }
 
-  updateLongest(itemLength: LongestItem) {
-    this.exportJob.longestItem =
-      itemLength.time > this.exportJob.longestItem.time
-        ? itemLength
-        : this.exportJob.longestItem;
+  async handleBatches(type: MediaType) {
+    const batchSize = 100;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const context = this;
+
+    const started = Date.now();
+
+    async function handleItems(items: number[]) {
+      const batchToProcess = items.slice(0, batchSize);
+
+      if (!batchToProcess.length) return;
+
+      const batchItems = await Promise.all(
+        batchToProcess.map((id) =>
+          DailyExports.fetchItemWithDeletion(id, type),
+        ),
+      );
+      const batchData = batchItems
+        .map(({ data }) => data)
+        .filter((data) => !!data?.id);
+      await context.storeBatch(batchData, type);
+
+      const remainingItems = items.slice(batchSize);
+
+      context.exportJob.progress[type] += batchToProcess.length;
+      context.exportJob.filteredItems[type] +=
+        batchToProcess.length - batchItems.length;
+      const timeSpent = Date.now() - started;
+      const timePerItem = timeSpent / context.exportJob.progress[type];
+      context.exportJob.estimatedRemainingMinutes[type] =
+        (remainingItems.length * timePerItem) / 60000;
+
+      return handleItems(remainingItems);
+    }
+
+    this.exportJob.size[type] = this.storedBatch.length;
+
+    await handleItems(this.storedBatch);
+    this.storedBatch = [];
   }
 
   async readFileLines(
@@ -313,7 +298,7 @@ export class DailyExports {
         if (err.response.status === 429) {
           const retryAfter = +err.response.headers['retry-after'];
           await logError(`Trying to recover - ${id} -- ${err.toString()}`);
-          await new Promise((resolve) =>
+          await new Promise<void>((resolve) =>
             setTimeout(() => resolve(), retryAfter * 1000),
           );
           return this.fetchItem(id, type);

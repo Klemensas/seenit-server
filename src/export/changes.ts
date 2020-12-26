@@ -320,16 +320,16 @@ function storeAllChanges() {
   return storeChanges().then((inserted) => !inserted || storeAllChanges());
 }
 
-console.log('store start');
-storeAllChanges()
-  .then(() => {
-    console.log('stored');
-    setTimeout(() => {
-      console.log('delayed exit');
-      process.exit(0);
-    }, 1000);
-  })
-  .catch(async (err) => {
-    await logError(`Changes bailed - ${err.toString()}`);
-    process.exit(1);
-  });
+// console.log('store start');
+// storeAllChanges()
+//   .then(() => {
+//     console.log('stored');
+//     setTimeout(() => {
+//       console.log('delayed exit');
+//       process.exit(0);
+//     }, 1000);
+//   })
+//   .catch(async (err) => {
+//     await logError(`Changes bailed - ${err.toString()}`);
+//     process.exit(1);
+//   });
