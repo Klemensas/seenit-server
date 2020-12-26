@@ -106,6 +106,7 @@ const resolvers = {
         const items = await getAutoTrackedByIds(ids).withGraphFetched(
           '[movie, tv]',
         );
+
         const isOwner = !items.some(({ userId }) => userId !== user.id);
         const hasItems = !items.some(({ movie, tv }) => !movie && !tv);
 

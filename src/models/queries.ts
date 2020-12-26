@@ -23,13 +23,16 @@ export function searchContent(
     }
   >
 > {
-  const formattedTitle =
-    title
-      .slice(0, 100)
-      .toLowerCase()
-      .replace(/[^\w\d\s]/g, '')
-      .trim()
-      .replace(/\s/g, ' & ') + ':*';
+  const baseTitle = title
+    .slice(0, 100)
+    .toLowerCase()
+    .replace(/[^\w\d\s]/g, '')
+    .trim()
+    .replace(/\s/g, ' & ');
+
+  if (!baseTitle.length) return Promise.resolve([]);
+
+  const formattedTitle = baseTitle + ':*';
 
   const movieQuery = Movie.query(connection)
     .select(

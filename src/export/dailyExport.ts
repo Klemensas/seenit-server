@@ -124,13 +124,11 @@ export class DailyExports {
         this.exportJob.progress[type] += lineLength;
         this.exportJob.progress.total += lineLength;
 
-        if (parsedData.adult) {
-          return;
-        }
+        if (parsedData.adult) return;
+
         if (this.exportJob.skipStored) {
-          reader.pause();
           const isStored = stored.has(parsedData.id);
-          reader.resume();
+
           if (isStored) {
             this.exportJob.skippedLines++;
             return;
@@ -156,7 +154,7 @@ export class DailyExports {
         this.exportJob.averageTime =
           (+itemEnd - +this.exportJob.start) / this.exportJob.itemsStored;
 
-        if (!remainingLimit) {
+        if (!isNaN(remainingLimit) && !remainingLimit) {
           await new Promise((resolve) =>
             setTimeout(
               resolve,
