@@ -35,7 +35,7 @@ export class Settings extends BaseModel {
     required: ['general', 'extension'],
 
     properties: {
-      id: { type: 'integer' },
+      id: { type: 'string' },
       userId: { type: 'string' },
     },
   };

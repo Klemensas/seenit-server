@@ -53,5 +53,6 @@ export function insertUserGraph(
 ) {
   return User.query(connection)
     .allowGraph('[settings]')
-    .insertGraphAndFetch(user);
+    .insertGraph(user)
+    .returning('*');
 }
