@@ -8,8 +8,8 @@ import { knex } from '../config';
 import { Movie } from '../models/movie/model';
 import { Tv } from '../models/tv/model';
 import TMDB, { MediaType } from '../services/TMDB';
-import { formatTvItems } from './changes';
 import { logError } from '../errors/log';
+import { formatTvItems } from './helpers';
 
 export enum ExportPaths {
   'movie' = 'http://files.tmdb.org/p/exports/movie_ids_',

@@ -43,6 +43,7 @@ export interface TV {
 }
 
 export interface TmdbSeason {
+  _id: string;
   id: number;
   name?: string;
   overview?: string;
