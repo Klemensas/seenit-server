@@ -1,6 +1,9 @@
 exports.up = function (knex) {
   return knex.schema
     .raw(`
+      CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+    `)
+    .raw(`
       CREATE TEXT SEARCH DICTIONARY english_stem_nostop (
         Template = snowball,
         Language = english
@@ -264,5 +267,8 @@ exports.down = function (knex) {
     .dropTableIfExists('DailyChanges')
     .raw(`
       DROP TEXT SEARCH DICTIONARY english_stem_nostop CASCADE
+    `)
+    .raw(`
+      DROP EXTENSION IF EXISTS "uuid-ossp"
     `)
 };
