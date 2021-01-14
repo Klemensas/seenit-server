@@ -2,7 +2,7 @@ import { execSync } from 'child_process';
 
 const dbName = process.env.DB_NAME;
 const dbUser = process.env.DB_USER;
-const syncTargetConnection = process.env.SYNC_DB_CONNECTION;
+const syncTargetConnection = process.env.REMOTE_DB_CONNECTION;
 
 const targetTables = ['Movie', 'Tv', 'Season', 'Episode', 'DailyChanges'];
 let targetString = targetTables.reduce(
