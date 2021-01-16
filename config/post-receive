@@ -1,0 +1,10 @@
+#!/bin/sh
+
+echo "howdy!"
+git --work-tree=/var/www --git-dir=/var/repo checkout -f
+
+cd /var/www
+npm install
+npm run migrate:latest
+npm run build
+pm2 restart server

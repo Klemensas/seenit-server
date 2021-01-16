@@ -23,7 +23,7 @@ export class User extends BaseModel {
       modelClass: '../watched/model',
       join: {
         from: 'User.id',
-        to: 'Watched.id',
+        to: 'Watched.userId',
       },
     },
     settings: {
@@ -31,7 +31,7 @@ export class User extends BaseModel {
       modelClass: '../settings/model',
       join: {
         from: 'User.id',
-        to: 'Settings.id',
+        to: 'Settings.userId',
       },
     },
   };

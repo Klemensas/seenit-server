@@ -23,5 +23,6 @@ app.get('/export', async (req, res) => {
 
 app.listen(config.port);
 
+// Run for yesterday in case today still isn't generated
 const date = new Date(Date.now() - 86400000);
 export default dailyExport.loadDailies(date, true);

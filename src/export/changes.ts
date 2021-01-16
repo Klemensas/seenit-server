@@ -1,20 +1,11 @@
 import { knex } from '../config';
-import TMDB, {
-  MediaType,
-  TV,
-  Movie as TmdbMovie,
-  TmdbSeason,
-  TmdbEpisode,
-} from '../services/TMDB';
+import TMDB, { MediaType, TV, Movie as TmdbMovie } from '../services/TMDB';
 import { Movie } from '../models/movie/model';
 import { Tv } from '../models/tv/model';
 import { DailyExports } from './dailyExport';
 import { DailyChanges } from '../models/dailyChanges/model';
-import { Season } from '../models/season/model';
-import { Episode } from '../models/episode/model';
 import { logError } from '../errors/log';
-
-const exportDate = '2019-08-30';
+import { formatTvItems } from './helpers';
 
 export enum ExportPaths {
   'movie' = '/movie/changes',
@@ -86,69 +77,6 @@ async function updateMovieItems(
   ]);
 
   return formattedItems;
-}
-
-export function formatTvEpisodes(
-  episodeData: TmdbEpisode[],
-  currentData: Episode[],
-) {
-  return episodeData.map(
-    ({ id: tmdbId, air_date, show_id, season_number, ...episode }) => {
-      const storedEpisode = currentData.find(
-        ({ tmdbId: existingTmdbId }) => existingTmdbId === tmdbId,
-      );
-
-      return {
-        ...storedEpisode,
-        tmdbId,
-        air_date: +new Date(air_date) || null,
-        ...episode,
-      };
-    },
-  );
-}
-
-export function formatTvSeasons(
-  seasonData: TmdbSeason[],
-  currentData: Season[],
-) {
-  return seasonData.map(
-    ({ id: tmdbId, _id, episodes, air_date, ...season }: any) => {
-      const storedSeason = currentData.find(
-        ({ tmdbId: existingTmdbId }) => existingTmdbId === tmdbId,
-      );
-
-      return {
-        ...storedSeason,
-        tmdbId,
-        air_date: +new Date(air_date) || null,
-        episodes: episodes
-          ? formatTvEpisodes(
-              episodes,
-              storedSeason ? storedSeason.episodes : [],
-            )
-          : [],
-        ...season,
-      };
-    },
-  );
-}
-
-export function formatTvItems(items: Tv[], changes: TV[]) {
-  return changes.map(({ id, ...item }) => {
-    const storedItem = items.find(({ tmdbId }) => tmdbId === id);
-    const newItem: any = {
-      ...storedItem,
-      ...item,
-      tmdbId: id,
-      seasons: formatTvSeasons(
-        item.seasons,
-        storedItem ? storedItem.seasons : [],
-      ),
-    };
-
-    return newItem;
-  });
 }
 
 async function updateTvItems(
@@ -268,7 +196,6 @@ export async function getRangeChanges(
     })),
   );
 
-  console.log('final moment');
   await DailyChanges.query().insertGraph(
     newItems.map((item) => ({
       type,
@@ -283,7 +210,6 @@ export async function getRangeChanges(
       createdAt: +to,
     })),
   );
-  console.log('rip in pieces');
 }
 
 export async function storeChanges() {
@@ -291,10 +217,14 @@ export async function storeChanges() {
     .orderBy('createdAt', 'desc')
     .limit(1)
     .first();
+  const lastUpdateTime = +(
+    lastChanges?.createdAt ||
+    (await Movie.query(knex).orderBy('updatedAt', 'desc').limit(1).first())
+      ?.updatedAt
+  );
 
-  const lastDate = lastChanges ? +lastChanges.createdAt : exportDate;
   const batch = lastChanges ? lastChanges.batch + 1 : 0;
-  const date = new Date(lastDate);
+  const date = new Date(lastUpdateTime);
   const daysFromLastCheck = (Date.now() - +date) / 86400000;
   const endTime = daysFromLastCheck > 2 ? +date + 172800000 : Date.now();
   const endDate = new Date(endTime);

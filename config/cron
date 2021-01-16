@@ -1,0 +1,16 @@
+0 18 * * * pm2 start 0
+0 23 * * * bash /var/db/backup.sh
+
+DROP TABLE "AutoTracked" CASCADE;
+DROP TABLE "DailyChanges" CASCADE;
+DROP TABLE "Movie" CASCADE;
+DROP TABLE "Rating" CASCADE;
+DROP TABLE "Review" CASCADE;
+DROP TABLE "Season" CASCADE;
+DROP TABLE "Settings" CASCADE;
+DROP TABLE "Episode" CASCADE;
+DROP TABLE "Tv" CASCADE;
+DROP TABLE "User" CASCADE;
+DROP TABLE "Watched" CASCADE;
+DROP TABLE "knex_migrations" CASCADE;
+DROP TABLE "knex_migrations_lock" CASCADE;

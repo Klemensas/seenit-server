@@ -36,7 +36,7 @@ export const resolvers = {
         } as Settings,
       });
 
-      return { token: Auth.signToken(user) };
+      return { token: Auth.signToken(user), user };
     },
     login: async (parent, { email, password }) => {
       const user = await getFullUser({ email });
