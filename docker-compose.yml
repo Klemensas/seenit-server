@@ -17,3 +17,4 @@ postgres:
   volumes_from:
     - postgres-data
   command: -c "max_stack_depth=6MB"
+  shm_size: 256MB

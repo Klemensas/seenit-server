@@ -19,7 +19,10 @@ import {
   deleteAutoTracked,
 } from './queries';
 import { searchContent } from '../queries';
-import { createWatchedListGraph } from '../watched/queries';
+import {
+  createWatchedItemGraph,
+  createWatchedListGraph,
+} from '../watched/queries';
 import { knex } from '../../config';
 
 type AutoTrackedMetaTvData = {
@@ -73,9 +76,20 @@ const resolvers = {
         const searchItem = searchResults[0];
         let episodeData = null;
 
+        console.log('ssss', user);
         if (searchItem) {
-          if (isTvItem) {
+          if (isTvItem)
             episodeData = await resolveTvData(meta.tvData, searchItem.id);
+
+          if (user.settings.general.autoConvert) {
+            return createWatchedItemGraph({
+              itemId: searchItem.id,
+              itemType: searchItem.type,
+              tvItemId: episodeData?.id,
+              tvItemType: episodeData ? TvItemTypes.Episode : null,
+              userId,
+              createdAt,
+            });
           }
         }
 
@@ -179,6 +193,12 @@ const resolvers = {
       return obj.constructor.name;
     },
   },
+  AutoTrackedResult: {
+    __resolveType(obj) {
+      return obj.constructor.name;
+    },
+  },
+
   // Review: {
   //   watched: (review: Review) => getWatchedById(review.watchedId),
   // },

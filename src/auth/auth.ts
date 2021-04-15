@@ -43,7 +43,8 @@ export class Auth {
 
   static async getUserFromToken(token: string) {
     const tokenData = jwt.verify(token, config.secrets.session) as any;
-    const user = await getUserById(tokenData.id);
+    const user = await getUserById(tokenData.id).withGraphFetched('settings');
+
     return user;
   }
 
