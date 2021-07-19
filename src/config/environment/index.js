@@ -17,7 +17,7 @@ module.exports = {
   secrets: {
     session: process.env.APP_SECRET || 'secret',
   },
-  sessionLength: process.env.SESSION_LENGTH || 18000,
+  sessionLength: +process.env.SESSION_LENGTH || 18000,
   knex: {
     options: {
       client: 'postgresql',

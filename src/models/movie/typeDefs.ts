@@ -17,7 +17,7 @@ export const typeDefs = gql`
     poster_path: String
     production_companies: [Company]
     production_countries: [Country]
-    release_date: String!
+    release_date: String
     revenue: Int
     runtime: Int
     spoken_languages: [Language]

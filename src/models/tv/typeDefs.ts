@@ -6,10 +6,10 @@ export const typeDefs = gql`
     backdrop_path: String
     created_by: [Author]
     episode_run_time: [Int]
-    first_air_date: String!
+    first_air_date: String
     genres: [Genre]
     homepage: String!
-    in_production: Boolean!
+    in_production: Boolean
     languages: [String]
     last_air_date: String!
     last_episode_to_air: Episode

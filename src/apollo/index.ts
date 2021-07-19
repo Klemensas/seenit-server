@@ -26,6 +26,11 @@ import { Auth } from '../auth/auth';
 import { baseType, serviceTypeDefs } from './typeDefs';
 import { serviceResolvers } from './resolvers';
 import { config } from '../config';
+import { User } from '../models/user/model';
+
+export type FullContext = { user: User }
+export type UnvalidatedContext = Partial<FullContext>
+export type AuthenticatedContext = Pick<FullContext, 'user'>
 
 export function initializeApolloServer(app: express.Express) {
   const apolloServer = new ApolloServer({
@@ -57,7 +62,7 @@ export function initializeApolloServer(app: express.Express) {
       autoTrackedResolvers,
       settingsResolvers,
     ),
-    context: async ({ req, res }) => {
+    context: async ({ req, res }): Promise<FullContext> => {
       if (req) {
         if (req.headers.authorization) {
           const token =
