@@ -10,6 +10,9 @@ export const typeDefs = gql`
       general: GeneralSettingsInput!
       extension: ExtensionSettingsInput!
     ): Settings!
+    addToExtensionBlacklist(
+      blacklistItem: String!
+    ): Settings!
   }
 
   type Settings {

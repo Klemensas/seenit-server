@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 import { Transaction, QueryBuilder } from 'objection';
 
 import { knex } from '../config';

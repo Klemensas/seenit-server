@@ -139,7 +139,7 @@ export class TMDB {
     return this.search<Person>(query, searchParams, 'person');
   }
 
-  extractLimits(headers: object) {
+  extractLimits(headers: Record<string, unknown>) {
     return {
       limit: +headers['x-ratelimit-limit'],
       remainingLimit: +headers['x-ratelimit-remaining'],

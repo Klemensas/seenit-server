@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 import { Transaction } from 'objection';
 
 import { knex } from '../../config';
@@ -18,6 +18,18 @@ export function updateSettings(
 ) {
   return Settings.query(connection)
     .update(settings)
+    .where({ userId })
+    .first()
+    .returning('*');
+}
+
+export function patchSettings(
+  settings: Partial<Settings>,
+  userId: number | string,
+  connection: Transaction | Knex = knex,
+) {
+  return Settings.query(connection)
+    .patch(settings)
     .where({ userId })
     .first()
     .returning('*');

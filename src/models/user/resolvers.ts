@@ -5,8 +5,7 @@ import { getUsers, getUser, insertUserGraph, getFullUser } from './queries';
 import { Auth } from '../../auth/auth';
 import { watchedResolver } from '../watched/resolvers';
 import { getSettings } from '../settings/queries';
-import { User } from './model';
-import { Settings } from '../settings/model';
+import { defaultSettings, Settings } from '../settings/model';
 
 export const resolvers = {
   Query: {
@@ -24,16 +23,7 @@ export const resolvers = {
         name,
         email,
         password,
-        settings: {
-          general: {
-            autoConvert: false,
-          },
-          extension: {
-            autoTrack: false,
-            minLengthSeconds: 360,
-            blacklist: [],
-          },
-        } as Settings,
+        settings: defaultSettings as Settings,
       });
 
       return { token: Auth.signToken(user), user };

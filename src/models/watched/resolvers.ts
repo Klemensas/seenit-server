@@ -25,6 +25,7 @@ import { getRatingByWatched } from '../rating/queries';
 import { transaction } from 'objection';
 import { knex } from '../../config';
 import { deleteAutoTracked } from '../autoTracked/queries';
+import { AuthenticatedContext } from '../../apollo';
 
 interface AddWatchedPayload {
   itemId: string;
@@ -73,7 +74,7 @@ export const resolvers = {
           tvItemType,
           autoTrackedId,
         }: AddWatchedPayload,
-        { user }: { user: User },
+        { user }: AuthenticatedContext,
       ) => {
         const { tmdbId } = await itemLoaders[itemType](itemId);
         const itemData = {
@@ -122,7 +123,7 @@ export const resolvers = {
       async (
         parent,
         { id, createdAt, review, rating, tvItemId, tvItemType }: EditWatched,
-        { user }: { user: User },
+        { user }: AuthenticatedContext,
       ) => {
         const originalWatched = await getWatchedById(id).withGraphFetched(
           '[review, rating]',
@@ -157,7 +158,7 @@ export const resolvers = {
       async (
         parent,
         { itemId }: { itemId: string },
-        { user }: { user: User },
+        { user }: AuthenticatedContext,
       ) => {
         const watched = await getWatchedById(itemId);
         const isOwner = watched.userId === user.id;

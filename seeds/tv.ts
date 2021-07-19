@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 
 import tvList from './util/tvList';
 import { Tv } from '../src/models/tv/model';

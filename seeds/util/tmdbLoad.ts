@@ -25,7 +25,7 @@ async function loadList(list = tvIds, tmDb: TMDB = tmdbService) {
       const { items, headers } = await loadBatch(list, remainingRequests, tmDb);
       loadedItems = loadedItems.concat(items);
       const nextBatch = headers['x-ratelimit-reset'];
-      await new Promise((resolve) =>
+      await new Promise<void>((resolve) =>
         setTimeout(() => {
           console.log('resolve', (+nextBatch - Date.now() / 1000) * 1000);
           resolve();

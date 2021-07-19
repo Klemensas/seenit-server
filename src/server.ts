@@ -66,9 +66,9 @@ export class Server {
   private static configureApp() {
     Server.app.use(bodyParser.urlencoded({ extended: true }));
     Server.app.use(bodyParser.json());
-    // @ts-ignore TODO: figure this out
+    // @ts-expect-error TODO: figure this out
     Server.app.use(compression());
-    // @ts-ignore TODO: figure this out
+    // @ts-expect-error TODO: figure this out
     Server.app.use(morgan('dev'));
     initializeApolloServer(Server.app);
   }
