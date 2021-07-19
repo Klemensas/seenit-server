@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 
 import movieList from './util/movieList';
 import { Movie } from '../src/models/movie/model';

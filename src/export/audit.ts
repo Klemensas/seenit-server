@@ -1,6 +1,6 @@
 import { writeFileSync } from 'fs';
 import { resolve } from 'path';
-import * as Knex from 'knex';
+import knexConnector, { Knex } from 'knex';
 import { QueryBuilder } from 'objection';
 
 import { knex } from '../config';
@@ -31,24 +31,14 @@ async function batchLoadItems<T extends Movie | Tv>(
 }
 
 function listToAuditedTmdbMap<T extends Movie | Tv>(list: T[]) {
-  return list.reduce(
-    (
-      acc: Record<
-        string,
-        Pick<
-          T,
-          Exclude<keyof T, 'id' | 'createdAt' | 'updatedAt' | 'popularity'>
-        >
-      >,
-      item,
-    ) => {
-      const { id, updatedAt, createdAt, popularity, ...auditedProps } = item;
-      acc[item.tmdbId] = auditedProps;
+  type AuditedItem = Omit<T, 'id' | 'createdAt' | 'updatedAt' | 'popularity'>;
 
-      return acc;
-    },
-    {},
-  );
+  return list.reduce((acc: Record<string, AuditedItem>, item) => {
+    const { id, updatedAt, createdAt, popularity, ...auditedProps } = item;
+    acc[item.tmdbId] = auditedProps as AuditedItem;
+
+    return acc;
+  }, {});
 }
 
 function audit<T extends Movie | Tv>(list: T[], auditList: T[]) {
@@ -147,7 +137,7 @@ async function init(auditTarget: Knex) {
   );
 }
 
-const targetKnex = Knex({
+const targetKnex = knexConnector({
   ...envConfig.knex.options,
   connection: process.env.REMOTE_DB_CONNECTION,
 });

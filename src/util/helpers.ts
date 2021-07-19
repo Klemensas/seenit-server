@@ -1,4 +1,4 @@
-export const omitBy = <T extends {}>(
+export const omitBy = <T extends Record<string, unknown>>(
   object: T,
   filterFn: (property: T[keyof T]) => boolean,
 ): Partial<T> =>
@@ -8,5 +8,5 @@ export const omitBy = <T extends {}>(
     {},
   );
 
-export const omitFalsy = <T extends {}>(object: T) =>
+export const omitFalsy = <T extends Record<string, unknown>>(object: T) =>
   omitBy(object, (property) => (property ?? false) !== false);

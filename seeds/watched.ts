@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 import * as seedrandom from 'seedrandom';
 
 import { Watched } from '../src/models/watched/model';

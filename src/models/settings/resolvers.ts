@@ -5,7 +5,7 @@ import { AuthenticatedContext } from '../../apollo';
 
 export const resolvers = {
   Query: {
-    settings: isAuthenticated.createResolver((parent, context, { user }) =>
+    settings: isAuthenticated.createResolver((parent, context, { user }: AuthenticatedContext) =>
       getSettings(user.id),
     ),
   },

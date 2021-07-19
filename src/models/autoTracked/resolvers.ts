@@ -24,6 +24,7 @@ import {
   createWatchedListGraph,
 } from '../watched/queries';
 import { knex } from '../../config';
+import { AuthenticatedContext } from '../../apollo';
 
 type AutoTrackedMetaTvData = {
   season?: number;
@@ -104,7 +105,7 @@ const resolvers = {
       },
     ),
     removeAutoTracked: isAuthenticated.createResolver(
-      async (parent, { ids }: { ids: Array<string> }, { user }) => {
+      async (parent, { ids }: { ids: Array<string> }, { user }: AuthenticatedContext) => {
         const items = await getAutoTrackedByIds(ids);
         const isOwner = !items.some(({ userId }) => userId !== user.id);
 
@@ -115,7 +116,7 @@ const resolvers = {
       },
     ),
     convertAutoTracked: isAuthenticated.createResolver(
-      async (parent, { ids }: { ids: Array<string> }, { user }) => {
+      async (parent, { ids }: { ids: Array<string> }, { user }: AuthenticatedContext) => {
         const items = await getAutoTrackedByIds(ids).withGraphFetched(
           '[movie, tv]',
         );

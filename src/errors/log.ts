@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export function logError(message) {
-  return new Promise((resolve) => {
+  return new Promise<void>((resolve) => {
     const stream = fs.createWriteStream(path.resolve(__dirname, 'errors.log'), {
       flags: 'a',
     });
