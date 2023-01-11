@@ -32,7 +32,7 @@
     "graphql": "^14.6.0",
     "jest": "^26.0.1",
     "jsonwebtoken": "^8.3.0",
-    "knex": "^0.95.6",
+    "knex": "^2.4.0",
     "line-by-line": "^0.1.6",
     "morgan": "^1.10.0",
     "objection": "^2.2.15",
