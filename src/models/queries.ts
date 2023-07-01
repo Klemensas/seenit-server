@@ -9,20 +9,20 @@ import { ItemTypes } from '../util/watchedItemHelper';
 
 // General queries spanning multiple models
 // TODO: figure out a better structure for this
+export type SearchResult = Pick<
+  Movie,
+  'id' | 'tmdbId' | 'title' | 'release_date' | 'popularity'
+> & {
+  score: number;
+  type: ItemTypes;
+};
 
 export function searchContent(
-  title: string,
+  { title, releaseYear }: { title: string; releaseYear?: string },
   limit = searchResults,
   types: Array<'movie' | 'tv'> = ['movie', 'tv'],
   connection: Transaction | Knex = knex,
-): Promise<
-  Array<
-    Pick<Movie, 'id' | 'tmdbId' | 'title' | 'release_date' | 'popularity'> & {
-      score: number;
-      type: ItemTypes;
-    }
-  >
-> {
+): Promise<Array<SearchResult>> {
   const baseTitle = title
     .slice(0, 100)
     .toLowerCase()
@@ -34,13 +34,14 @@ export function searchContent(
 
   const formattedTitle = baseTitle + ':*';
 
-  const movieQuery = Movie.query(connection)
+  let movieQuery = Movie.query(connection)
     .select(
       'id',
       'tmdbId',
       'title',
       'release_date',
       'popularity',
+      'poster_path',
       knex.raw(`'${ItemTypes.Movie}' as type`),
       knex.raw(
         `ts_rank_cd("titleVector", to_tsquery('english_nostop', ?), 4) as score`,
@@ -51,15 +52,17 @@ export function searchContent(
       knex.raw(`"titleVector" @@ to_tsquery('english_nostop', ?)`, [
         formattedTitle,
       ]),
-    );
+    )
+    .andWhere('release_date', 'like', `%${releaseYear}%`);
 
-  const tvQuery = Tv.query(connection)
+  let tvQuery = Tv.query(connection)
     .select(
       'id',
       'tmdbId',
       'name as title',
       'first_air_date as release_date',
       'popularity',
+      'poster_path',
       knex.raw(`'${ItemTypes.Tv}' as type`),
       knex.raw(
         `ts_rank_cd("titleVector", to_tsquery('english_nostop', ?), 4) as score`,
@@ -71,6 +74,15 @@ export function searchContent(
         formattedTitle,
       ]),
     );
+
+  if (releaseYear) {
+    movieQuery = movieQuery.andWhere(
+      'release_date',
+      'like',
+      `%${releaseYear}%`,
+    );
+    tvQuery = tvQuery.andWhere('first_air_date', 'like', `%${releaseYear}%`);
+  }
 
   let baseQuery: QueryBuilder<Movie | Tv>;
   if (types.length === 1) {

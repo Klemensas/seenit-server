@@ -8,7 +8,7 @@ import * as bodyParser from 'body-parser';
 import * as passport from 'passport';
 import * as errorHandler from 'errorhandler';
 import { ApolloServer } from 'apollo-server-express';
-// // import morgan = require('morgan');
+import { graphqlUploadExpress } from 'graphql-upload';
 import dotenv = require('dotenv');
 
 import { config } from './config';
@@ -17,6 +17,11 @@ import { logger } from './util/logger';
 import { InternalServerError } from './errors/internalServerError';
 import { Auth } from './auth/auth';
 import { initializeApolloServer } from './apollo';
+// import {
+//   findMatchingItems,
+//   transformLetterboxdCsv,
+// } from './models/import/service';
+// import { createWatchedItemGraph } from './models/watched/queries';
 
 dotenv.config();
 
@@ -39,7 +44,7 @@ export class Server {
   public static async initializeApp(): Promise<http.Server | https.Server> {
     try {
       Server.app = express();
-      Server.configureApp();
+      await Server.configureApp();
       Server.initializeAuth();
 
       Router.initializeRoutes(Server.app);
@@ -50,6 +55,18 @@ export class Server {
       });
 
       const setupServer = config.tls.certPath ? setupHttps : setupHttp;
+
+      // console.time('parse');
+      // const rcs = await transformLetterboxdCsv([
+      //   'C:/X/letterboxd-export/diary.csv',
+      //   'C:/X/letterboxd-export/reviews.csv',
+      //   'C:/X/letterboxd-export/watched.csv',
+      //   'C:/X/letterboxd-export/ratings.csv',
+      // ]);
+      // const oh = await findMatchingItems(Object.values(rcs));
+      // console.timeEnd('parse');
+      // console.log('parsed', oh);
+
       return setupServer(Server.app);
     } catch (error) {
       throw new InternalServerError(error.message);
@@ -66,10 +83,10 @@ export class Server {
   private static configureApp() {
     Server.app.use(bodyParser.urlencoded({ extended: true }));
     Server.app.use(bodyParser.json());
-    // @ts-expect-error TODO: figure this out
     Server.app.use(compression());
-    // @ts-expect-error TODO: figure this out
     Server.app.use(morgan('dev'));
-    initializeApolloServer(Server.app);
+    Server.app.use(graphqlUploadExpress({ maxFiles: 1, maxFileSize: 102400 }));
+
+    return initializeApolloServer(Server.app);
   }
 }

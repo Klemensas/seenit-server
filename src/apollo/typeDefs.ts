@@ -13,6 +13,8 @@ export const baseType = gql`
 `;
 
 export const serviceTypeDefs = gql`
+  scalar Upload
+
   extend type Query {
     searchContent(title: String!): [SearchItem!]!
   }
@@ -75,6 +77,8 @@ export const serviceTypeDefs = gql`
     tmdbId: Int!
     title: String!
     release_date: String
+    popularity: Float
+    poster_path: String
     type: ItemType!
   }
   # type TmdbSearch {

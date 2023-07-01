@@ -1,11 +1,14 @@
+import { GraphQLUpload } from 'graphql-upload';
+
 import { searchContent } from '../models/queries';
 
 export const serviceResolvers = {
+  Upload: GraphQLUpload,
   Query: {
     searchContent: (parent, { title }, { models }) => {
       if (!title) return [];
 
-      return searchContent(title);
+      return searchContent({ title });
     },
   },
   TmdbMedia: {

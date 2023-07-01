@@ -70,7 +70,7 @@ const resolvers = {
         const isTvItem = !!meta.tvData;
 
         const searchResults = await searchContent(
-          meta.title,
+          { title: meta.title },
           1,
           isTvItem ? ['tv'] : ['tv', 'movie'],
         );
@@ -105,7 +105,11 @@ const resolvers = {
       },
     ),
     removeAutoTracked: isAuthenticated.createResolver(
-      async (parent, { ids }: { ids: Array<string> }, { user }: AuthenticatedContext) => {
+      async (
+        parent,
+        { ids }: { ids: Array<string> },
+        { user }: AuthenticatedContext,
+      ) => {
         const items = await getAutoTrackedByIds(ids);
         const isOwner = !items.some(({ userId }) => userId !== user.id);
 
@@ -116,7 +120,11 @@ const resolvers = {
       },
     ),
     convertAutoTracked: isAuthenticated.createResolver(
-      async (parent, { ids }: { ids: Array<string> }, { user }: AuthenticatedContext) => {
+      async (
+        parent,
+        { ids }: { ids: Array<string> },
+        { user }: AuthenticatedContext,
+      ) => {
         const items = await getAutoTrackedByIds(ids).withGraphFetched(
           '[movie, tv]',
         );
