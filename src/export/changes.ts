@@ -232,6 +232,7 @@ export async function storeChanges() {
     return null;
   }
 
+  console.log(`Trying to fetch changes for ${date} to ${endDate}`);
   console.time('Changes');
   await getRangeChanges('movie', date, endDate, batch);
   await getRangeChanges('tv', date, endDate, batch);
