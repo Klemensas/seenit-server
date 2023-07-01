@@ -4,7 +4,6 @@ import { Movie } from '../models/movie/model';
 import { Tv } from '../models/tv/model';
 import { DailyExports } from './dailyExport';
 import { DailyChanges } from '../models/dailyChanges/model';
-import { logError } from '../errors/log';
 import { formatTvItems } from './helpers';
 
 export enum ExportPaths {
@@ -102,13 +101,8 @@ async function loadItemsSync(ids: number[], type: MediaType) {
   const items = [];
 
   while (list.length) {
-    const {
-      data,
-      id,
-      remainingLimit,
-      limit,
-      nextBatch,
-    } = await DailyExports.fetchItemWithDeletion(list.shift(), type);
+    const { data, id, remainingLimit, limit, nextBatch } =
+      await DailyExports.fetchItemWithDeletion(list.shift(), type);
     if (data) {
       items.push(data);
     } else {
@@ -163,9 +157,9 @@ export async function getRangeChanges(
   try {
     newItems = await (type === 'movie'
       ? updateMovieItems(currentItems as Movie[], data)
-      : updateTvItems(currentItems, data));
+      : updateTvItems(currentItems as Tv[], data));
   } catch (err) {
-    await logError(
+    console.error(
       `Couldn't save the following - ${JSON.stringify({
         data,
         changedIds,
@@ -259,7 +253,7 @@ storeAllChanges()
       process.exit(0);
     }, 1000);
   })
-  .catch(async (err) => {
-    await logError(`Changes bailed - ${err.toString()}`);
+  .catch((err) => {
+    console.error(`Changes bailed - ${err.toString()}`);
     process.exit(1);
   });

@@ -8,7 +8,6 @@ import { knex } from '../config';
 import { Movie } from '../models/movie/model';
 import { Tv } from '../models/tv/model';
 import TMDB, { MediaType } from '../services/TMDB';
-import { logError } from '../errors/log';
 import { formatTvItems } from './helpers';
 
 export enum ExportPaths {
@@ -122,7 +121,7 @@ export class DailyExports {
         this.storedBatch.push(parsedData.id);
         this.exportJob.size[type]++;
       } catch (err) {
-        await logError(
+        console.error(
           `${err.toString()}-${
             err.response ? JSON.stringify(err.response.headers) : ''
           }`,
@@ -280,7 +279,7 @@ export class DailyExports {
       if (err && err.response) {
         const limits = TMDB.extractLimits(err.response.headers);
         if (err.response.status === 404) {
-          await logError(`No item - ${id}`);
+          console.error(`No item - ${id}`);
 
           return {
             data: null,
@@ -290,14 +289,14 @@ export class DailyExports {
         }
 
         if (err.response.status === 504) {
-          await logError(`Got timeout for - ${id}, attempt #${attempt}`);
+          console.error(`Got timeout for - ${id}, attempt #${attempt}`);
 
           return this.fetchItemWithDeletion(id, type, attempt + 1);
         }
 
         if (err.response.status === 429) {
           const retryAfter = +err.response.headers['retry-after'];
-          await logError(`Trying to recover - ${id} -- ${err.toString()}`);
+          console.error(`Trying to recover - ${id} -- ${err.toString()}`);
           await new Promise<void>((resolve) =>
             setTimeout(() => resolve(), retryAfter * 1000),
           );
@@ -305,7 +304,7 @@ export class DailyExports {
         }
       }
 
-      await logError(`Unforseen error - ${id}, type ${type}`);
+      console.error(`Unforseen error - ${id}, type ${type}`);
       throw err;
     }
   }
