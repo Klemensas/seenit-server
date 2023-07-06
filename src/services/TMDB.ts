@@ -139,14 +139,6 @@ export class TMDB {
     return this.search<Person>(query, searchParams, 'person');
   }
 
-  extractLimits(headers: Record<string, unknown>) {
-    return {
-      limit: +headers['x-ratelimit-limit'],
-      remainingLimit: +headers['x-ratelimit-remaining'],
-      nextBatch: +headers['x-ratelimit-reset'],
-    };
-  }
-
   getTvWithEpisodes = async (tvId: number, seasons: TmdbSeason[] = []) => {
     const seasonsPerCall = 20;
 

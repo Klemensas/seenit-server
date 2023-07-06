@@ -267,7 +267,6 @@ export class DailyExports {
     return {
       data,
       id,
-      ...TMDB.extractLimits(headers),
     };
   }
 
@@ -277,14 +276,12 @@ export class DailyExports {
       return result;
     } catch (err) {
       if (err && err.response) {
-        const limits = TMDB.extractLimits(err.response.headers);
         if (err.response.status === 404) {
           console.error(`No item - ${id}`);
 
           return {
             data: null,
             id,
-            ...limits,
           };
         }
 
@@ -295,10 +292,12 @@ export class DailyExports {
         }
 
         if (err.response.status === 429) {
-          const retryAfter = +err.response.headers['retry-after'];
-          console.error(`Trying to recover - ${id} -- ${err.toString()}`);
+          const retryAfter = 10000;
+          console.error(
+            `Rate limited, trying to recover - ${id} -- ${err.toString()}`,
+          );
           await new Promise<void>((resolve) =>
-            setTimeout(() => resolve(), retryAfter * 1000),
+            setTimeout(() => resolve(), retryAfter),
           );
           return this.fetchItem(id, type);
         }
