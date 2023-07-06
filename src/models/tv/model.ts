@@ -1,7 +1,7 @@
 import { BaseModel } from '../baseModel';
 import { knex } from '../../config';
 import { Watched } from '../watched/model';
-import { Genre, Company } from '../movie/model';
+import { Genre, Company, Country } from '../movie/model';
 import { Season } from '../season/model';
 import { Episode } from '../episode/model';
 import { ItemTypes } from '../../util/watchedItemHelper';
@@ -23,6 +23,7 @@ export interface Network {
 
 export class Tv extends BaseModel {
   readonly id: string;
+  adult?: boolean;
   name?: string;
   overview?: string;
   first_air_date?: string;
@@ -47,7 +48,9 @@ export class Tv extends BaseModel {
   original_name?: string;
   popularity?: number;
   production_companies?: Company[];
+  production_countries?: Country[];
   status?: string;
+  tagline?: string;
   type?: string;
   titleVector?: string;
 
